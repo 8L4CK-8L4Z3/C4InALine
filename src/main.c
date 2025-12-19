@@ -23,7 +23,18 @@ int main() {
     int choix;
     // Defaults
     // Color IDs: 1=Red, 3=Yellow
-    ParametresJeu parametres = {7, "rond", 1, 3, 30, 1, 2, 2, 'X', 'O'};
+    ParametresJeu parametres = {
+        .tailleGrille = 7,
+        .formePions = "rond",
+        .colorJ1 = 1,
+        .colorJ2 = 3,
+        .tempsLimite = 30,
+        .autosave = 1,
+        .modeJeu = 2,
+        .difficulty = 2,
+        .symboleJ1 = 'X',
+        .symboleJ2 = 'O'
+    };
     // modeJeu default 2 (PvC), difficulty 2 (Medium), symbols X/O
     
     // Attempt load config

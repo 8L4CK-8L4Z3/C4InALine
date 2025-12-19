@@ -2,6 +2,8 @@
 #include "commun.h"
 #include "ui.h"
 #include "input.h" // For readKey, configureTerminal...
+#include <sys/select.h>
+#include <unistd.h>
 
 #include <stdlib.h> // for system
 
@@ -13,13 +15,10 @@ int menuSelection(const char *titre, const char *options[], int nbOptions) {
     while (1) {
         clearScreen();
         if (titre) {
-             printLogo(); // Always print logo for consistency or just title?
-             // Maybe conditional. For main menu we want Logo. For others maybe just title.
-             // But existing code called printLogo in afficherMenu.
-             // Let's print Logo if title is NULL or specific string?
-             // Or just always print Logo? Let's stick to simple UI.
-             // If titre is provided, print it.
-             if (titre[0] != '\0') printCentered(titre);
+             // If titre is provided, print it. If NULL, use Logo (main menu style)
+             // Actually, main menu passed NULL.
+             if (titre[0] == '\0') printLogo();
+             else printCentered(titre);
         } else {
              printLogo();
         }
@@ -37,6 +36,12 @@ int menuSelection(const char *titre, const char *options[], int nbOptions) {
             }
         }
         printCenteredPrompt("\nUtilisez les fleches haut/bas et Entree pour valider.");
+
+        // Wait for input to avoid busy loop
+        fd_set set;
+        FD_ZERO(&set);
+        FD_SET(STDIN_FILENO, &set);
+        select(STDIN_FILENO + 1, &set, NULL, NULL, NULL);
 
         int key = readKey();
         if (key == KEY_UP) {

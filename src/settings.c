@@ -5,26 +5,24 @@
 #include "ui.h"
 
 void choisirCouleur(int *colorRef, int playerNum) {
-    int choix;
-    char buf[100];
-    snprintf(buf, sizeof(buf), "\n--- Couleur Joueur %d ---", playerNum);
-    printCentered(buf);
-    printCentered("1. Rouge");
-    printCentered("2. Vert");
-    printCentered("3. Jaune");
-    printCentered("4. Bleu");
-    printCentered("5. Magenta");
-    printCentered("6. Cyan");
-    printCentered("0. Blanc (Defaut)");
-    printCenteredPrompt("Choix : ");
-    
-    scanf("%d", &choix);
-    getchar();
-    if (choix >= 0 && choix <= 6) {
-        *colorRef = choix;
-    } else {
-        printf("Choix invalide, conservation de la couleur.\n");
-    }
+    char title[100];
+    snprintf(title, sizeof(title), "Couleur Joueur %d", playerNum);
+    const char *options[] = {
+        "Rouge",
+        "Vert",
+        "Jaune",
+        "Bleu",
+        "Magenta",
+        "Cyan",
+        "Blanc (Defaut)"
+    };
+    int choix = menuSelection(title, options, 7);
+    // menuSelection returns 1-based index: 1=Rouge, ..., 7=Blanc
+    // Mapping: Rouge=1, Vert=2, Jaune=3, Bleu=4, Magenta=5, Cyan=6, Blanc=7 (or 0)
+    // Existing code logic: 1..6 are colors, 0 is default (White).
+    // Let's map 7 to 0.
+    if (choix == 7) *colorRef = 0;
+    else *colorRef = choix;
 }
 
 const char* getColorName(int c) {
@@ -42,26 +40,25 @@ const char* getColorName(int c) {
 // Gère les paramètres du jeu
 void gererParametres(ParametresJeu *params) {
     int choix;
-    char buf[200];
+    char opt1[100], opt2[100], opt3[100], opt4[100], opt5[100], opt6[100], opt7[100];
+
     do {
-        clearScreen();
-        printCentered("\n=== Parametres de jeu ===");
-        snprintf(buf, sizeof(buf), "1. Taille de la grille (actuelle : %d)", params->tailleGrille); printCentered(buf);
-        snprintf(buf, sizeof(buf), "2. Forme des pions (actuelle : J1:%c J2:%c)", params->symboleJ1, params->symboleJ2); printCentered(buf);
-        snprintf(buf, sizeof(buf), "3. Couleur Joueur 1 (actuelle : %s)", getColorName(params->colorJ1)); printCentered(buf);
-        snprintf(buf, sizeof(buf), "4. Couleur Joueur 2 (actuelle : %s)", getColorName(params->colorJ2)); printCentered(buf);
-        snprintf(buf, sizeof(buf), "5. Temps limite par tour (actuel : %d secondes)", params->tempsLimite); printCentered(buf);
-        snprintf(buf, sizeof(buf), "6. Mode de jeu (actuel : %s)", params->modeJeu == 1 ? "Joueur vs Joueur" : "Joueur vs Ordi"); printCentered(buf);
         char diff[20];
         if(params->difficulty == 1) strcpy(diff, "Facile");
         else if(params->difficulty == 3) strcpy(diff, "Difficile");
         else strcpy(diff, "Moyen");
-        snprintf(buf, sizeof(buf), "7. Difficulte IA (actuelle : %s)", diff); printCentered(buf);
-        printCentered("8. Retour au menu principal");
-        printCenteredPrompt("Choisissez une option a modifier : ");
+
+        snprintf(opt1, sizeof(opt1), "Taille de la grille (%d)", params->tailleGrille);
+        snprintf(opt2, sizeof(opt2), "Forme des pions (J1:%c J2:%c)", params->symboleJ1, params->symboleJ2);
+        snprintf(opt3, sizeof(opt3), "Couleur Joueur 1 (%s)", getColorName(params->colorJ1));
+        snprintf(opt4, sizeof(opt4), "Couleur Joueur 2 (%s)", getColorName(params->colorJ2));
+        snprintf(opt5, sizeof(opt5), "Temps limite (%ds)", params->tempsLimite);
+        snprintf(opt6, sizeof(opt6), "Mode de jeu (%s)", params->modeJeu == 1 ? "PvP" : "PvC");
+        snprintf(opt7, sizeof(opt7), "Difficulte IA (%s)", diff);
+
+        const char *options[] = {opt1, opt2, opt3, opt4, opt5, opt6, opt7, "Retour"};
         
-        scanf("%d", &choix);
-        getchar(); // consommer '\n'
+        choix = menuSelection("Parametres de jeu", options, 8);
 
         switch(choix) {
             case 1:
@@ -88,28 +85,23 @@ void gererParametres(ParametresJeu *params) {
                 scanf("%d", &params->tempsLimite);
                 getchar();
                 break;
-            case 6:
-                printCentered("1. Joueur vs Joueur");
-                printCentered("2. Joueur vs Ordi");
-                printCenteredPrompt("Choix: ");
-                int m;
-                scanf("%d", &m); getchar();
-                if(m == 1 || m == 2) params->modeJeu = m;
+            case 6: {
+                const char *modes[] = {"Joueur vs Joueur", "Joueur vs Ordi"};
+                int m = menuSelection("Mode de Jeu", modes, 2);
+                params->modeJeu = m;
                 break;
-            case 7:
-                printCentered("1. Facile");
-                printCentered("2. Moyen");
-                printCentered("3. Difficile");
-                printCenteredPrompt("Choix: ");
-                int d;
-                scanf("%d", &d); getchar();
-                if(d >= 1 && d <= 3) params->difficulty = d;
+            }
+            case 7: {
+                const char *diffs[] = {"Facile", "Moyen", "Difficile"};
+                int d = menuSelection("Difficulte IA", diffs, 3);
+                params->difficulty = d; // 1, 2, 3 maps directly
                 break;
+            }
             case 8:
-                printf("Retour au menu principal...\n");
+                // Retour
                 break;
             default:
-                printf("Option invalide.\n");
+                break;
         }
     } while (choix != 8);
 }
