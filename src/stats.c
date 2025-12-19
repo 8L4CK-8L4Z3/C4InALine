@@ -32,6 +32,8 @@ void afficherStats() {
         fclose(f);
     } else {
         printCentered("Aucune statistique disponible.");
+        printCentered("Appuyez sur Entree pour revenir au menu...");
+        getchar();
         return;
     }
 
@@ -41,4 +43,7 @@ void afficherStats() {
     snprintf(buf, sizeof(buf), "Victoires J1 : %d", stats.victoiresJ1); printCentered(buf);
     snprintf(buf, sizeof(buf), "Victoires J2/Ordi : %d", stats.victoiresJ2); printCentered(buf);
     snprintf(buf, sizeof(buf), "Temps total joue : %ds", stats.tempsTotalJoue); printCentered(buf);
+
+    printCentered("Appuyez sur Entree pour revenir au menu...");
+    getchar();
 }
