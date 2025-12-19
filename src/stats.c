@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "stats.h"
+#include "ui.h"
 
 #define STATS_FILE "stats.dat"
 
@@ -30,13 +31,14 @@ void afficherStats() {
         fread(&stats, sizeof(StatsJeu), 1, f);
         fclose(f);
     } else {
-        printf("Aucune statistique disponible.\n");
+        printCentered("Aucune statistique disponible.");
         return;
     }
 
-    printf("\n=== Statistiques Globales ===\n");
-    printf("Parties Jouees : %d\n", stats.partiesJouees);
-    printf("Victoires J1 : %d\n", stats.victoiresJ1);
-    printf("Victoires J2/Ordi : %d\n", stats.victoiresJ2);
-    printf("Temps total joue : %ds\n", stats.tempsTotalJoue);
+    printCentered("\n=== Statistiques Globales ===");
+    char buf[100];
+    snprintf(buf, sizeof(buf), "Parties Jouees : %d", stats.partiesJouees); printCentered(buf);
+    snprintf(buf, sizeof(buf), "Victoires J1 : %d", stats.victoiresJ1); printCentered(buf);
+    snprintf(buf, sizeof(buf), "Victoires J2/Ordi : %d", stats.victoiresJ2); printCentered(buf);
+    snprintf(buf, sizeof(buf), "Temps total joue : %ds", stats.tempsTotalJoue); printCentered(buf);
 }

@@ -9,6 +9,7 @@
 #include "commun.h"
 #include "replay.h"
 #include "stats.h"
+#include "ui.h"
 #include <string.h>
 
 // Helper to clear input buffer
@@ -25,12 +26,16 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
 
     // AI Check
     if (params->modeJeu == 2 && joueur == 2) {
-        printf("L'ordinateur reflechit...\n");
+        printCentered("L'ordinateur reflechit...");
         // sleep(1);
         col = calculerCoupOrdi(grille, rows, cols, params->symboleJ2, params->symboleJ1);
-        printf("L'ordinateur joue en colonne %d\n", col);
+        char buf[100];
+        snprintf(buf, sizeof(buf), "L'ordinateur joue en colonne %d", col);
+        printCentered(buf);
     } else {
-        printf("Joueur %d (%c), choisissez une colonne (0-%d) ou -99 pour sauver : ", joueur, symbole, cols-1);
+        char prompt[200];
+        snprintf(prompt, sizeof(prompt), "Joueur %d (%c), choisissez une colonne (0-%d) ou -99 pour sauver : ", joueur, symbole, cols-1);
+        printCentered(prompt);
         
         // Time limit logic using select
         fd_set set;
@@ -46,13 +51,13 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
             perror("select"); 
             return 0;
         } else if (rv == 0) {
-            printf("\nTemps ecoule ! Vous passez votre tour (coup aleatoire).\n");
+            printCentered("\nTemps ecoule ! Vous passez votre tour (coup aleatoire).");
             do {
                 col = rand() % cols;
             } while (colonnePleine(grille, col, rows));
         } else {
             if (scanf("%d", &col) != 1) {
-                printf("Entree invalide.\n");
+                printCentered("Entree invalide.");
                 viderBuffer();
                 return 0;
             }
@@ -62,7 +67,7 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
     if (col == -99) return -99;
 
     if (!insererPion(grille, col, symbole, rows, cols)) {
-        printf(" Colonne invalide ou pleine ! Choisissez une autre.\n");
+        printCentered(" Colonne invalide ou pleine ! Choisissez une autre.");
         return 0;
     }
 
@@ -70,12 +75,12 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
     return 1;
 }
 
-// fonction pour v\xe9rifier la victoire d'un joueur
+// fonction pour vérifier la victoire d'un joueur
 int verifierVictoire(char **grille, int rows, int cols, char symbole) {
     return verifierGrille(grille, rows, cols, symbole);
 }
 
-// fonction pour v\xe9rifier si la grille est pleine
+// fonction pour vérifier si la grille est pleine
 static int grillePleine(char **grille, int rows, int cols) {
     for (int j = 0; j < cols; j++) {
         if (!colonnePleine(grille, j, rows))
@@ -84,7 +89,7 @@ static int grillePleine(char **grille, int rows, int cols) {
     return 1;
 }
 
-// fonction pour jouer une partie compl\xe8te
+// fonction pour jouer une partie complète
 void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
     int rows = params->tailleGrille;
     int cols = params->tailleGrille;
@@ -107,25 +112,19 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
     char symbole;
 
     // Replay recording
-    int moves[MAX_MOVES];
+    int moves[MAX_MOVES_TOTAL];
     int moveCount = 0;
 
     // Resume moves
     if (saveToResume != NULL) {
-        if (saveToResume->moveCount <= MAX_MOVES) {
+        if (saveToResume->moveCount <= MAX_MOVES_TOTAL) {
              memcpy(moves, saveToResume->moves, saveToResume->moveCount * sizeof(int));
              moveCount = saveToResume->moveCount;
         }
     }
 
-    // Recover moves if resuming? No easy way unless saved. 
-    // Assuming replay is for new games or just appended. 
-    // If resuming, moveCount starts at 0 effectively losing history of resumed game.
-    // For full compliance, save file should store moves too. 
-    // I will skip move recovery on resume for now as it wasn't strictly requested to REPLAY resumed games fully from start.
-
     while (1) {
-        system("clear");
+        clearScreen();
         afficherGrille(grille, rows, cols, params);
         
         // Autosave check
@@ -134,22 +133,8 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
         }
         
         int result;
-        // We need to capture the column played to store in moves[]
-        // jouerTour currently returns 1 on success but doesn't return the column.
-        // We need to modify jouerTour to return the column played or use a pointer.
-        // Or simpler: check which column changed? No.
-        // I will modify jouerTour signature to return the column via pointer.
-        
         int playedCol = -1;
         do {
-            // Updated signature call needed, but I need to update prototype first.
-            // Wait, I can't update signature easily without breaking header.
-            // Actually I can, I'm editing game.c
-            // Let's rely on retrieving the move.
-            // Since `jouerTour` does the insertion, I don't know which col.
-            // I should modify `jouerTour`.
-            
-            // Let's modify `jouerTour` to accept `int *lastCol`.
             result = jouerTour(joueur, grille, rows, cols, params, &playedCol);
             
             if (result == -99) {
@@ -159,27 +144,29 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
             }
         } while (result == 0);
         
-        if (moveCount < MAX_MOVES) {
+        if (moveCount < MAX_MOVES_TOTAL) {
             moves[moveCount++] = playedCol;
         }
 
         symbole = (joueur == 1) ? params->symboleJ1 : params->symboleJ2;
 
-        // v\xe9rifier victoire
+        // vérifier victoire
         if (verifierVictoire(grille, rows, cols, symbole)) {
-            system("clear");
+            clearScreen();
             afficherGrille(grille, rows, cols, params);
-            printf("\n\033[1;32m*** VICTOIRE ! Joueur %d (%c) a gagne ! ***\033[0m\n", joueur, symbole);
+            char buf[200];
+            snprintf(buf, sizeof(buf), "\n\033[1;32m*** VICTOIRE ! Joueur %d (%c) a gagne ! ***\033[0m", joueur, symbole);
+            printCentered(buf);
             sauvegarderReplay(moves, moveCount, rows, cols, params, joueur);
             mettreAJourStats(joueur, (int)difftime(time(NULL), startTime));
             break;
         }
 
-        // v\xe9rifier match nul
+        // vérifier match nul
         if (grillePleine(grille, rows, cols)) {
-            system("clear");
+            clearScreen();
             afficherGrille(grille, rows, cols, params);
-            printf("\n\033[1;33m*** MATCH NUL ! La grille est pleine. ***\033[0m\n");
+            printCentered("\n\033[1;33m*** MATCH NUL ! La grille est pleine. ***\033[0m");
             sauvegarderReplay(moves, moveCount, rows, cols, params, 0);
             mettreAJourStats(0, (int)difftime(time(NULL), startTime));
             break;
@@ -190,4 +177,7 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
     }
 
     libererGrille(grille, rows);
+    printCentered("Appuyez sur Entree pour continuer...");
+    getchar(); // Wait for user
+    getchar();
 }

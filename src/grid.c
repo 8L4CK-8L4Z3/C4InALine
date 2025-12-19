@@ -1,4 +1,5 @@
 #include "grid.h"
+#include "ui.h"
 #include <string.h>
 
 char** creerGrille(int rows, int cols){
@@ -33,12 +34,30 @@ const char* getAnsiColor(int c) {
 }
 
 void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params){
-    printf("\n  ");
+    int termWidth = getTerminalWidth();
+    // Grid width calculation:
+    // Header row: "  0 1 2 ..."
+    // Each cell is 2 chars ("0 "), plus initial "  ".
+    // Actually header: "  " + (cols * 2 chars) -> 2 + 2*cols.
+
+    // Grid rows: "0 . . . "
+    // "0 " (2 chars) + cols * 2 chars ("X ") -> 2 + 2*cols.
+
+    int gridWidth = 2 + 2 * cols;
+    int padding = (termWidth - gridWidth) / 2;
+    if (padding < 0) padding = 0;
+
+    // Print header
+    printf("\n");
+    for(int k=0; k<padding; k++) printf(" ");
+    printf("  ");
     for(int c=0;c<cols;c++){
         printf("%d ",c);//afficher le num de chaque col
     }
     printf("\n");
+
     for(int i=0;i<rows;i++){
+        for(int k=0; k<padding; k++) printf(" ");
         printf("%d ",i);
         for(int j=0;j<cols;j++){
             char sym = grille[i][j];

@@ -2,18 +2,22 @@
 #include <string.h>
 #include <stdlib.h> // for system
 #include "commun.h"
+#include "ui.h"
 
 void choisirCouleur(int *colorRef, int playerNum) {
     int choix;
-    printf("\n--- Couleur Joueur %d ---\n", playerNum);
-    printf("1. Rouge\n");
-    printf("2. Vert\n");
-    printf("3. Jaune\n");
-    printf("4. Bleu\n");
-    printf("5. Magenta\n");
-    printf("6. Cyan\n");
-    printf("0. Blanc (Defaut)\n");
-    printf("Choix : ");
+    char buf[100];
+    snprintf(buf, sizeof(buf), "\n--- Couleur Joueur %d ---", playerNum);
+    printCentered(buf);
+    printCentered("1. Rouge");
+    printCentered("2. Vert");
+    printCentered("3. Jaune");
+    printCentered("4. Bleu");
+    printCentered("5. Magenta");
+    printCentered("6. Cyan");
+    printCentered("0. Blanc (Defaut)");
+    printCentered("Choix : ");
+
     scanf("%d", &choix);
     getchar();
     if (choix >= 0 && choix <= 6) {
@@ -38,17 +42,19 @@ const char* getColorName(int c) {
 // Gère les paramètres du jeu
 void gererParametres(ParametresJeu *params) {
     int choix;
+    char buf[200];
     do {
-        system("clear");
-        printf("\n=== Parametres de jeu ===\n");
-        printf("1. Taille de la grille (actuelle : %d)\n", params->tailleGrille);
-        printf("2. Forme des pions (actuelle : J1:%c J2:%c)\n", params->symboleJ1, params->symboleJ2);
-        printf("3. Couleur Joueur 1 (actuelle : %s)\n", getColorName(params->colorJ1));
-        printf("4. Couleur Joueur 2 (actuelle : %s)\n", getColorName(params->colorJ2));
-        printf("5. Temps limite par tour (actuel : %d secondes)\n", params->tempsLimite);
-        printf("6. Mode de jeu (actuel : %s)\n", params->modeJeu == 1 ? "Joueur vs Joueur" : "Joueur vs Ordi");
-        printf("7. Retour au menu principal\n");
-        printf("Choisissez une option a modifier : ");
+        clearScreen();
+        printCentered("\n=== Parametres de jeu ===");
+        snprintf(buf, sizeof(buf), "1. Taille de la grille (actuelle : %d)", params->tailleGrille); printCentered(buf);
+        snprintf(buf, sizeof(buf), "2. Forme des pions (actuelle : J1:%c J2:%c)", params->symboleJ1, params->symboleJ2); printCentered(buf);
+        snprintf(buf, sizeof(buf), "3. Couleur Joueur 1 (actuelle : %s)", getColorName(params->colorJ1)); printCentered(buf);
+        snprintf(buf, sizeof(buf), "4. Couleur Joueur 2 (actuelle : %s)", getColorName(params->colorJ2)); printCentered(buf);
+        snprintf(buf, sizeof(buf), "5. Temps limite par tour (actuel : %d secondes)", params->tempsLimite); printCentered(buf);
+        snprintf(buf, sizeof(buf), "6. Mode de jeu (actuel : %s)", params->modeJeu == 1 ? "Joueur vs Joueur" : "Joueur vs Ordi"); printCentered(buf);
+        printCentered("7. Retour au menu principal");
+        printCentered("Choisissez une option a modifier : ");
+
         scanf("%d", &choix);
         getchar(); // consommer '\n'
 
