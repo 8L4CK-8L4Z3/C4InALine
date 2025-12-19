@@ -45,10 +45,8 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
             // Check timeout
             if (difftime(time(NULL), start) >= params->tempsLimite) {
                 restoreTerminal();
-                printCentered("\nTemps ecoule ! Vous passez votre tour (coup aleatoire).");
-                do {
-                    col = rand() % cols;
-                } while (colonnePleine(grille, col, rows));
+                printCentered("\nTemps ecoule ! Vous avez perdu.");
+                col = -2; // Code pour défaite par temps
                 break;
             }
 
@@ -115,6 +113,7 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
     }
 
     if (col == -99) return -99;
+    if (col == -2) return -2;
 
     if (!insererPion(grille, col, symbole, rows, cols)) {
         printCentered(" Colonne invalide ou pleine ! Reessayez.");
@@ -196,8 +195,26 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
                 libererGrille(grille, rows);
                 return; // Exit game
             }
+            if (result == -2) {
+                break; // Timeout loss handled below
+            }
         } while (result == 0);
         
+        if (result == -2) {
+            // Handle timeout loss (current player lost)
+            int winner = (joueur == 1) ? 2 : 1;
+            char winnerSym = (winner == 1) ? params->symboleJ1 : params->symboleJ2;
+             
+            clearScreen();
+            afficherGrille(grille, rows, cols, params);
+            char buf[200];
+            snprintf(buf, sizeof(buf), "\n\033[1;32m*** VICTOIRE ! Joueur %d (%c) a gagne par forfait (temps) ! ***\033[0m", winner, winnerSym);
+            printCentered(buf);
+            sauvegarderReplay(moves, moveCount, rows, cols, params, winner);
+            mettreAJourStats(winner, (int)difftime(time(NULL), startTime));
+            break;
+        }
+
         if (moveCount < MAX_MOVES_TOTAL) {
             moves[moveCount++] = playedCol;
         }
