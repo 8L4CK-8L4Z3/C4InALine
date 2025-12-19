@@ -18,6 +18,14 @@ int getTerminalWidth() {
     return 80; // Default fallback
 }
 
+int getTerminalHeight() {
+    struct winsize w;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
+        return w.ws_row;
+    }
+    return 24; // Default fallback
+}
+
 // Helper to calculate visible length ignoring ANSI codes
 static int visibleLength(const char *s) {
     int len = 0;

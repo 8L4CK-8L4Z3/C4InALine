@@ -78,9 +78,9 @@ void chargerPartie(ParametresJeu *currentParams) {
                sauvegardes[i].joueurCourant);
         options[i] = optionsBuffer[i];
     }
+    options[nbSauvegardes] = "Retour";
     
-    int choix = menuSelection("Charger une partie", options, nbSauvegardes);
-    // choix is 1-based index or 0 if escaped (though current menuSelection loops forever until Enter)
+    int choix = menuSelection("Charger une partie", options, nbSauvegardes + 1);
 
     if (choix < 1 || choix > nbSauvegardes) return;
 
