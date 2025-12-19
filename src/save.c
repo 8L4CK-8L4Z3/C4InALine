@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h> // for sleep
 #include "commun.h"
 #include "game.h" // For jouerPartie prototype
 #include "ui.h"
@@ -62,18 +63,30 @@ void chargerPartie(ParametresJeu *currentParams) {
         printCentered("Aucune sauvegarde a charger.");
         return;
     }
-    afficherSauvegardes();
-    int choix;
-    printCenteredPrompt("Choisissez le numero de la partie a charger : ");
-    scanf("%d", &choix);
-    getchar();
-    if (choix < 1 || choix > nbSauvegardes) {
-        printf("Numéro invalide.\n");
-        return;
+    
+    // Construct menu options
+    // Allocate array of pointers. We need enough space.
+    // Since MAX_SAVED_GAMES is small (10), we can use a local array of buffers.
+    char optionsBuffer[MAX_SAVED_GAMES][100];
+    const char *options[MAX_SAVED_GAMES + 1]; // +1 for "Retour"? Or just list saves.
+    
+    for (int i = 0; i < nbSauvegardes; i++) {
+        snprintf(optionsBuffer[i], sizeof(optionsBuffer[i]), "%s (%dx%d, J%d)", 
+               sauvegardes[i].nomPartie, 
+               sauvegardes[i].parametres.tailleGrille,
+               sauvegardes[i].parametres.tailleGrille,
+               sauvegardes[i].joueurCourant);
+        options[i] = optionsBuffer[i];
     }
     
+    int choix = menuSelection("Charger une partie", options, nbSauvegardes);
+    // choix is 1-based index or 0 if escaped (though current menuSelection loops forever until Enter)
+    
+    if (choix < 1 || choix > nbSauvegardes) return;
+
     PartieSauvegardee *save = &sauvegardes[choix-1];
     printf("Partie '%s' chargee avec succes !\n", save->nomPartie);
+    sleep(1); 
     
     // Resume game
     *currentParams = save->parametres; // Update global params context if needed
