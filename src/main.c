@@ -39,34 +39,28 @@ int main() {
     }
 
     do {
-        afficherMenu();
-        scanf("%d", &choix);
-        getchar(); // consommer '\n'
+        choix = afficherMenuInteractif();
 
         switch (choix) {
             case 1:
                 if (aDesSauvegardes()) {
+                    const char *subOptions[] = {"Nouvelle Partie", "Charger une partie", "Retour"};
                     int subChoix;
                     do {
-                        clearScreen();
-                        printCentered("1. Nouvelle Partie");
-                        printCentered("2. Charger une partie");
-                        printCentered("0. Retour");
-                        printCenteredPrompt("Choix : ");
-                        scanf("%d", &subChoix);
-                        getchar();
+                        subChoix = menuSelection("Jouer", subOptions, 3);
+                        // menuSelection returns 1-based index
+                        // 1: Nouvelle, 2: Charger, 3: Retour
+
                         if (subChoix == 1) {
                             jouerPartie(&parametres, NULL);
                             break;
                         } else if (subChoix == 2) {
                             chargerPartie(&parametres);
                             break;
-                        } else if (subChoix == 0) {
-                            break;
-                        } else {
-                            printf("Option invalide.\n");
+                        } else if (subChoix == 3) {
+                            break; // Back to main loop
                         }
-                    } while (subChoix != 0);
+                    } while (subChoix != 3);
                 } else {
                     jouerPartie(&parametres, NULL);
                 }
@@ -76,10 +70,6 @@ int main() {
                 sauvegarderConfig(&parametres); // Auto-save on change
                 break;
             case 3:
-                // Call the new replay viewer logic
-                // The prototype for afficherReplays in main was just a placeholder print
-                // We'll use the one from replay.h or call visionnerReplay directly
-                // But we need to include replay.h
                 visionnerReplay();
                 break;
             case 4:

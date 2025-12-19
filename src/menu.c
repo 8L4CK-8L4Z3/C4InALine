@@ -1,19 +1,78 @@
 #include <stdio.h>
 #include "commun.h"
 #include "ui.h"
+#include "input.h" // For readKey, configureTerminal...
 
 #include <stdlib.h> // for system
 
-// Affiche le menu principal
+// Helper generic menu
+int menuSelection(const char *titre, const char *options[], int nbOptions) {
+    int selection = 0;
+    configureTerminal();
+
+    while (1) {
+        clearScreen();
+        if (titre) {
+             printLogo(); // Always print logo for consistency or just title?
+             // Maybe conditional. For main menu we want Logo. For others maybe just title.
+             // But existing code called printLogo in afficherMenu.
+             // Let's print Logo if title is NULL or specific string?
+             // Or just always print Logo? Let's stick to simple UI.
+             // If titre is provided, print it.
+             if (titre[0] != '\0') printCentered(titre);
+        } else {
+             printLogo();
+        }
+
+        printf("\n");
+        for (int i = 0; i < nbOptions; i++) {
+            char buf[200];
+            if (i == selection) {
+                // Highlight
+                snprintf(buf, sizeof(buf), "-> %s <-", options[i]);
+                printCentered(buf);
+            } else {
+                snprintf(buf, sizeof(buf), "   %s   ", options[i]);
+                printCentered(buf);
+            }
+        }
+        printCenteredPrompt("\nUtilisez les fleches haut/bas et Entree pour valider.");
+
+        int key = readKey();
+        if (key == KEY_UP) {
+            selection = (selection - 1 + nbOptions) % nbOptions;
+        } else if (key == KEY_DOWN) {
+            selection = (selection + 1) % nbOptions;
+        } else if (key == KEY_ENTER) {
+            restoreTerminal();
+            return selection + 1; // Return 1-based index
+        }
+    }
+    restoreTerminal();
+    return 0; // Should not reach
+}
+
+// Affiche le menu principal interactif
+int afficherMenuInteractif() {
+    const char *options[] = {
+        "Jouer",
+        "Parametres",
+        "Rejouer",
+        "Statistiques",
+        "Quitter"
+    };
+    // Pass NULL as title to indicate "Use Logo" logic if I implemented it,
+    // but in menuSelection I said "If titre... else printLogo".
+    // So passing NULL means printLogo.
+    return menuSelection(NULL, options, 5);
+}
+
+// Affiche le menu principal (Deprecated/Legacy wrapper or removed)
 void afficherMenu() {
-    clearScreen();
-    printLogo();
-    printCentered("1. Jouer");
-    printCentered("2. Parametres");
-    printCentered("3. Rejouer");
-    printCentered("4. Statistiques");
-    printCentered("5. Quitter");
-    printCenteredPrompt("Veuillez choisir une option : ");
+    // Legacy support if needed, but we are replacing it.
+    // We'll leave it empty or simple print if logic changes.
+    // For now, let's keep it sync just in case, or remove.
+    // The plan says "Replace ... with menuSelection".
 }
 
 // Affiche les replays (exemple)

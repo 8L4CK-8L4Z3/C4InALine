@@ -33,6 +33,8 @@ typedef struct {
 
 // Prototypes fonctions
 void afficherMenu();
+int afficherMenuInteractif();
+int menuSelection(const char *titre, const char *options[], int nbOptions);
 void afficherReplays();
 void gererParametres(ParametresJeu *params);
 void afficherSauvegardes();
