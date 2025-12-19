@@ -2,20 +2,21 @@
 #define GRID_H
 #include<stdlib.h>
 #include<stdio.h>
+#include "commun.h"
 
-// créer une grille
+// crÃ©er une grille
 char** creerGrille(int rows, int cols);
 
-// libérer la grille
+// libÃ©rer la grille
 void libererGrille(char **grille, int rows);
 
 // afficher la grille
-void afficherGrille(char **grille, int rows, int cols);
+void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params);
 
-// insérer un pion dans une colonne
+// insÃ©rer un pion dans une colonne
 int insererPion(char **grille, int col, char symbole, int rows, int cols);
 
-// vérifier si une colonne est pleine
+// vÃ©rifier si une colonne est pleine
 int colonnePleine(char **grille, int col, int rows);
 
 //verifier victoire

@@ -8,7 +8,8 @@ void afficherMenu() {
     printf("2. Parametres\n");
     printf("3. Sauvegarder \n");
     printf("4. Rejouer\n");
-    printf("5. Quitter\n");
+    printf("5. Statistiques\n");
+    printf("6. Quitter\n");
     printf("Veuillez choisir une option : ");
 }
 

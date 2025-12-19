@@ -1,4 +1,5 @@
 #include "grid.h"
+#include <string.h>
 
 char** creerGrille(int rows, int cols){
     char **grille = malloc(rows * sizeof(char*));
@@ -18,7 +19,7 @@ void libererGrille(char **grille, int rows){
     free(grille);
 }
 
-void afficherGrille(char **grille, int rows, int cols){
+void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params){
     printf("\n  ");
     for(int c=0;c<cols;c++){
         printf("%d ",c);//afficher le num de chaque col
@@ -27,7 +28,23 @@ void afficherGrille(char **grille, int rows, int cols){
     for(int i=0;i<rows;i++){
         printf("%d ",i);
         for(int j=0;j<cols;j++){
-            printf( "%c ",grille[i][j]);
+            // Couleur et forme
+            char sym = grille[i][j];
+            if (sym == '.') {
+                printf(". ");
+            } else {
+                // Check if J1 or J2 (simple check based on char)
+                // Assuming X is J1 and O is J2 for now, or use params->symboleJ1
+                char *color = "\033[0m";
+                if (sym == params->symboleJ1) color = "\033[31m"; // Red
+                else if (sym == params->symboleJ2) color = "\033[33m"; // Yellow
+                
+                // Override with text color name if simple match
+                if (strcmp(params->couleurPions, "rouge") == 0 && sym == params->symboleJ1) color = "\033[31m";
+                if (strcmp(params->couleurPions, "jaune") == 0 && sym == params->symboleJ2) color = "\033[33m";
+                
+                printf("%s%c\033[0m ", color, sym);
+            }
         }
         printf("\n");
     }

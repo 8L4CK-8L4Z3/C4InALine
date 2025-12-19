@@ -1,20 +1,17 @@
 #include <stdio.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdio.h>
 #include <string.h>
 #include "commun.h"
 
-// Gère les paramètres du jeu
+// G\xe8re les param\xe8tres du jeu
 void gererParametres(ParametresJeu *params) {
     int choix;
     do {
         printf("\n=== Parametres de jeu ===\n");
         printf("1. Taille de la grille (actuelle : %d)\n", params->tailleGrille);
-        printf("2. Forme des pions (actuelle : %s)\n", params->formePions);
+        printf("2. Forme des pions (actuelle : J1:%c J2:%c)\n", params->symboleJ1, params->symboleJ2);
         printf("3. Couleur des pions (actuelle : %s)\n", params->couleurPions);
         printf("4. Temps limite par tour (actuel : %d secondes)\n", params->tempsLimite);
-        printf("5. Autosave (actuelle : %s)\n", params->autosave ? "Activee" : "Désactivee");
+        printf("5. Mode de jeu (actuel : %s)\n", params->modeJeu == 1 ? "Joueur vs Joueur" : "Joueur vs Ordi");
         printf("6. Retour au menu principal\n");
         printf("Choisissez une option a modifier : ");
         scanf("%d", &choix);
@@ -22,14 +19,17 @@ void gererParametres(ParametresJeu *params) {
 
         switch(choix) {
             case 1:
-                printf("Entrez taille de la grille (ex: 7): ");
+                printf("Entrez taille de la grille (ex: 7, max 20): ");
                 scanf("%d", &params->tailleGrille);
+                if(params->tailleGrille > 20) params->tailleGrille = 20;
+                if(params->tailleGrille < 4) params->tailleGrille = 4;
                 getchar();
                 break;
             case 2:
-                printf("Entrez forme des pions (ex: rond, carre): ");
-                fgets(params->formePions, sizeof(params->formePions), stdin);
-                params->formePions[strcspn(params->formePions, "\n")] = 0;
+                printf("Entrez symbole J1 (char): ");
+                scanf("%c", &params->symboleJ1); getchar();
+                printf("Entrez symbole J2 (char): ");
+                scanf("%c", &params->symboleJ2); getchar();
                 break;
             case 3:
                 printf("Entrez couleur des pions (ex: rouge, jaune): ");
@@ -42,8 +42,10 @@ void gererParametres(ParametresJeu *params) {
                 getchar();
                 break;
             case 5:
-                params->autosave = !params->autosave;
-                printf("Autosave %s\n", params->autosave ? "activee" : "désactivee");
+                printf("1. Joueur vs Joueur\n2. Joueur vs Ordi\nChoix: ");
+                int m;
+                scanf("%d", &m); getchar();
+                if(m == 1 || m == 2) params->modeJeu = m;
                 break;
             case 6:
                 printf("Retour au menu principal...\n");
