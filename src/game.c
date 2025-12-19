@@ -125,6 +125,7 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
     // I will skip move recovery on resume for now as it wasn't strictly requested to REPLAY resumed games fully from start.
 
     while (1) {
+        system("clear");
         afficherGrille(grille, rows, cols, params);
         
         // Autosave check
@@ -166,8 +167,9 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
 
         // v\xe9rifier victoire
         if (verifierVictoire(grille, rows, cols, symbole)) {
+            system("clear");
             afficherGrille(grille, rows, cols, params);
-            printf("\n Joueur %d (%c) a gagn\xe9 !\n", joueur, symbole);
+            printf("\n\033[1;32m*** VICTOIRE ! Joueur %d (%c) a gagne ! ***\033[0m\n", joueur, symbole);
             sauvegarderReplay(moves, moveCount, rows, cols, params, joueur);
             mettreAJourStats(joueur, (int)difftime(time(NULL), startTime));
             break;
@@ -175,8 +177,9 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
 
         // v\xe9rifier match nul
         if (grillePleine(grille, rows, cols)) {
+            system("clear");
             afficherGrille(grille, rows, cols, params);
-            printf("\n Match nul ! La grille est pleine.\n");
+            printf("\n\033[1;33m*** MATCH NUL ! La grille est pleine. ***\033[0m\n");
             sauvegarderReplay(moves, moveCount, rows, cols, params, 0);
             mettreAJourStats(0, (int)difftime(time(NULL), startTime));
             break;

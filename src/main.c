@@ -19,7 +19,8 @@ int main() {
 
     int choix;
     // Defaults
-    ParametresJeu parametres = {7, "rond", "rouge", 30, 1, 2, 'X', 'O'}; 
+    // Color IDs: 1=Red, 3=Yellow
+    ParametresJeu parametres = {7, "rond", 1, 3, 30, 1, 2, 'X', 'O'}; 
     // modeJeu default 2 (PvC), symbols X/O
 
     do {

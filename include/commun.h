@@ -9,7 +9,9 @@
 typedef struct {
     int tailleGrille; // Taille carrée par défaut
     char formePions[20];
-    char couleurPions[20];
+    // Color IDs: 1=Red, 2=Green, 3=Yellow, 4=Blue, 5=Magenta, 6=Cyan
+    int colorJ1;
+    int colorJ2;
     int tempsLimite; // en secondes
     int autosave;    // 0 ou 1
     int modeJeu;     // 1: PvP, 2: PvC

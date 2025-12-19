@@ -19,6 +19,19 @@ void libererGrille(char **grille, int rows){
     free(grille);
 }
 
+// Helper for colors
+const char* getAnsiColor(int c) {
+    switch(c) {
+        case 1: return "\033[31m"; // Red
+        case 2: return "\033[32m"; // Green
+        case 3: return "\033[33m"; // Yellow
+        case 4: return "\033[34m"; // Blue
+        case 5: return "\033[35m"; // Magenta
+        case 6: return "\033[36m"; // Cyan
+        default: return "\033[0m"; // White/Reset
+    }
+}
+
 void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params){
     printf("\n  ");
     for(int c=0;c<cols;c++){
@@ -28,22 +41,15 @@ void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params){
     for(int i=0;i<rows;i++){
         printf("%d ",i);
         for(int j=0;j<cols;j++){
-            // Couleur et forme
             char sym = grille[i][j];
             if (sym == '.') {
                 printf(". ");
             } else {
-                // Check if J1 or J2 (simple check based on char)
-                // Assuming X is J1 and O is J2 for now, or use params->symboleJ1
-                char *color = "\033[0m";
-                if (sym == params->symboleJ1) color = "\033[31m"; // Red
-                else if (sym == params->symboleJ2) color = "\033[33m"; // Yellow
+                const char *colorCode = "\033[0m";
+                if (sym == params->symboleJ1) colorCode = getAnsiColor(params->colorJ1);
+                else if (sym == params->symboleJ2) colorCode = getAnsiColor(params->colorJ2);
                 
-                // Override with text color name if simple match
-                if (strcmp(params->couleurPions, "rouge") == 0 && sym == params->symboleJ1) color = "\033[31m";
-                if (strcmp(params->couleurPions, "jaune") == 0 && sym == params->symboleJ2) color = "\033[33m";
-                
-                printf("%s%c\033[0m ", color, sym);
+                printf("%s%c\033[0m ", colorCode, sym);
             }
         }
         printf("\n");

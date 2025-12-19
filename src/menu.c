@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include "commun.h"
 
+#include <stdlib.h> // for system
+
 // Affiche le menu principal
 void afficherMenu() {
-    printf("\n=== Menu Principal ===\n");
+    system("clear");
+    printf("\n\033[1;36m=== PUISSANCE 4 ===\033[0m\n");
     printf("1. Jouer\n");
     printf("2. Parametres\n");
     printf("3. Sauvegarder \n");
