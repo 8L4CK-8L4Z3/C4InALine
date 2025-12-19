@@ -4,6 +4,7 @@ SRC_DIR = src
 OBJ_DIR = obj
 BIN = game
 
+# Wildcard picks up all .c files in src, including new ones
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 

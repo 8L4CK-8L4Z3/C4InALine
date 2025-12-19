@@ -12,6 +12,7 @@ void libererGrille(char **grille, int rows);
 
 // afficher la grille
 void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params);
+void afficherGrilleTUI(char **grille, int rows, int cols, ParametresJeu *params, int cursorCol);
 
 // insérer un pion dans une colonne
 int insererPion(char **grille, int col, char symbole, int rows, int cols);

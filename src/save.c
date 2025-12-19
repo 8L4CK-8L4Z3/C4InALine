@@ -90,11 +90,11 @@ void sauvegarderPartie(char **grille, int rows, int cols, int joueurCourant, Par
     printf("Entrez un nom pour la sauvegarde : ");
     // Clear buffer if needed?
     // Clear buffer properly
-    // The -99 input was via scanf("%d"), leaving newline in buffer.
-    // We need to consume until newline.
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-
+    // With TUI raw mode, we don't have leftover newlines from scanf usually.
+    // But if we came from legacy path, maybe?
+    // Safer to just read. If empty, fgets waits.
+    // Removing the blocking consume loop.
+    
     fgets(nouvellePartie.nomPartie, sizeof(nouvellePartie.nomPartie), stdin);
     nouvellePartie.nomPartie[strcspn(nouvellePartie.nomPartie, "\n")] = 0;
 

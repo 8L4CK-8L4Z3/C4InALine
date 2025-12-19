@@ -1,5 +1,7 @@
-#include "grid.h"
+#include <stdio.h>
 #include <string.h>
+#include "grid.h"
+#include "ui.h"
 
 char** creerGrille(int rows, int cols){
     char **grille = malloc(rows * sizeof(char*));
@@ -32,18 +34,28 @@ const char* getAnsiColor(int c) {
     }
 }
 
-void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params){
+// Params: cursorCol is the column index where the player cursor is (-1 if none)
+void afficherGrilleTUI(char **grille, int rows, int cols, ParametresJeu *params, int cursorCol) {
+    // We assume clearScreen is called before
+    
+    // Print Cursor Row
     printf("\n  ");
-    for(int c=0;c<cols;c++){
-        printf("%d ",c);//afficher le num de chaque col
+    for(int c=0; c<cols; c++) {
+        if (c == cursorCol) {
+            printf("\033[1;37mV \033[0m"); // Cursor
+        } else {
+            printf("  ");
+        }
     }
     printf("\n");
-    for(int i=0;i<rows;i++){
-        printf("%d ",i);
-        for(int j=0;j<cols;j++){
+
+    // Print Grid
+    for(int i=0; i<rows; i++){
+        printf("  "); // Margin
+        for(int j=0; j<cols; j++){
             char sym = grille[i][j];
             if (sym == '.') {
-                printf(". ");
+                printf("\033[90m. \033[0m"); // Dark grey for dots
             } else {
                 const char *colorCode = "\033[0m";
                 if (sym == params->symboleJ1) colorCode = getAnsiColor(params->colorJ1);
@@ -54,7 +66,17 @@ void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params){
         }
         printf("\n");
     }
+    
+    // Column numbers
+    printf("  ");
+    for(int c=0;c<cols;c++){
+        printf("%d ", c%10);
+    }
     printf("\n");
+}
+
+void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params){
+    afficherGrilleTUI(grille, rows, cols, params, -1);
 }
 
 int colonnePleine(char **grille, int col, int rows) {
