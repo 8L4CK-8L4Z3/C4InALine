@@ -14,9 +14,27 @@ int menuSelection(const char *titre, const char *options[], int nbOptions) {
     
     while (1) {
         clearScreen();
+        
+        // Vertical centering logic
+        // Logo height = 8 (calculated: 1 empty + 6 logo + 1 empty/reset)
+        // Title height = 1
+        // Spacing = 1
+        // Options = nbOptions
+        
+        int contentHeight;
+        if (titre && titre[0] != '\0') {
+            contentHeight = 1 + 1 + nbOptions; // Title + Space + Options
+        } else {
+            contentHeight = 8 + 1 + nbOptions; // Logo + Space + Options
+        }
+        
+        int termHeight = getTerminalHeight();
+        int vPad = (termHeight - contentHeight) / 2;
+        if (vPad < 0) vPad = 0;
+        
+        for(int k=0; k<vPad; k++) printf("\n");
+
         if (titre) {
-             // If titre is provided, print it. If NULL, use Logo (main menu style)
-             // Actually, main menu passed NULL.
              if (titre[0] == '\0') printLogo(); 
              else printCentered(titre);
         } else {
@@ -35,7 +53,7 @@ int menuSelection(const char *titre, const char *options[], int nbOptions) {
                 printCentered(buf);
             }
         }
-        printCenteredPrompt("\nUtilisez les fleches haut/bas et Entree pour valider.");
+        // printCenteredPrompt("\nUtilisez les fleches haut/bas et Entree pour valider."); // Removed per request
 
         // Wait for input to avoid busy loop
         fd_set set;
