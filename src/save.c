@@ -59,7 +59,7 @@ void chargerPartie(ParametresJeu *currentParams) {
     }
     afficherSauvegardes();
     int choix;
-    printCentered("Choisissez le numero de la partie a charger : ");
+    printCenteredPrompt("Choisissez le numero de la partie a charger : ");
     scanf("%d", &choix);
     getchar();
     if (choix < 1 || choix > nbSauvegardes) {
@@ -90,7 +90,7 @@ void sauvegarderPartie(char **grille, int rows, int cols, int joueurCourant, Par
     }
 
     PartieSauvegardee nouvellePartie;
-    printf("Entrez un nom pour la sauvegarde : ");
+    printCenteredPrompt("Entrez un nom pour la sauvegarde : ");
     // Clear buffer if needed?
     // Clear buffer properly
     // The -99 input was via scanf("%d"), leaving newline in buffer.

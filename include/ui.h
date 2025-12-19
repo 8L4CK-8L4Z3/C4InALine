@@ -3,6 +3,7 @@
 
 void clearScreen();
 void printCentered(const char *format, ...);
+void printCenteredPrompt(const char *format, ...);
 int getTerminalWidth();
 void printLogo();
 

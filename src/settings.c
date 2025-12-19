@@ -16,7 +16,7 @@ void choisirCouleur(int *colorRef, int playerNum) {
     printCentered("5. Magenta");
     printCentered("6. Cyan");
     printCentered("0. Blanc (Defaut)");
-    printCentered("Choix : ");
+    printCenteredPrompt("Choix : ");
     
     scanf("%d", &choix);
     getchar();
@@ -52,24 +52,29 @@ void gererParametres(ParametresJeu *params) {
         snprintf(buf, sizeof(buf), "4. Couleur Joueur 2 (actuelle : %s)", getColorName(params->colorJ2)); printCentered(buf);
         snprintf(buf, sizeof(buf), "5. Temps limite par tour (actuel : %d secondes)", params->tempsLimite); printCentered(buf);
         snprintf(buf, sizeof(buf), "6. Mode de jeu (actuel : %s)", params->modeJeu == 1 ? "Joueur vs Joueur" : "Joueur vs Ordi"); printCentered(buf);
-        printCentered("7. Retour au menu principal");
-        printCentered("Choisissez une option a modifier : ");
+        char diff[20];
+        if(params->difficulty == 1) strcpy(diff, "Facile");
+        else if(params->difficulty == 3) strcpy(diff, "Difficile");
+        else strcpy(diff, "Moyen");
+        snprintf(buf, sizeof(buf), "7. Difficulte IA (actuelle : %s)", diff); printCentered(buf);
+        printCentered("8. Retour au menu principal");
+        printCenteredPrompt("Choisissez une option a modifier : ");
         
         scanf("%d", &choix);
         getchar(); // consommer '\n'
 
         switch(choix) {
             case 1:
-                printf("Entrez taille de la grille (ex: 7, max 20): ");
+                printCenteredPrompt("Entrez taille de la grille (ex: 7, max 20): ");
                 scanf("%d", &params->tailleGrille);
                 if(params->tailleGrille > 20) params->tailleGrille = 20;
                 if(params->tailleGrille < 4) params->tailleGrille = 4;
                 getchar();
                 break;
             case 2:
-                printf("Entrez symbole J1 (char): ");
+                printCenteredPrompt("Entrez symbole J1 (char): ");
                 scanf("%c", &params->symboleJ1); getchar();
-                printf("Entrez symbole J2 (char): ");
+                printCenteredPrompt("Entrez symbole J2 (char): ");
                 scanf("%c", &params->symboleJ2); getchar();
                 break;
             case 3:
@@ -79,21 +84,32 @@ void gererParametres(ParametresJeu *params) {
                 choisirCouleur(&params->colorJ2, 2);
                 break;
             case 5:
-                printf("Entrez temps limite par tour (secondes): ");
+                printCenteredPrompt("Entrez temps limite par tour (secondes): ");
                 scanf("%d", &params->tempsLimite);
                 getchar();
                 break;
             case 6:
-                printf("1. Joueur vs Joueur\n2. Joueur vs Ordi\nChoix: ");
+                printCentered("1. Joueur vs Joueur");
+                printCentered("2. Joueur vs Ordi");
+                printCenteredPrompt("Choix: ");
                 int m;
                 scanf("%d", &m); getchar();
                 if(m == 1 || m == 2) params->modeJeu = m;
                 break;
             case 7:
+                printCentered("1. Facile");
+                printCentered("2. Moyen");
+                printCentered("3. Difficile");
+                printCenteredPrompt("Choix: ");
+                int d;
+                scanf("%d", &d); getchar();
+                if(d >= 1 && d <= 3) params->difficulty = d;
+                break;
+            case 8:
                 printf("Retour au menu principal...\n");
                 break;
             default:
                 printf("Option invalide.\n");
         }
-    } while (choix != 7);
+    } while (choix != 8);
 }

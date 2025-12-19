@@ -3,7 +3,7 @@
 
 #include "commun.h"
 
-void chargerConfig(ParametresJeu *params);
+int chargerConfig(ParametresJeu *params);
 void sauvegarderConfig(ParametresJeu *params);
 
 #endif

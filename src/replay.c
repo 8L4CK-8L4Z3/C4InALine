@@ -77,7 +77,7 @@ void visionnerReplay() {
 
     afficherListeReplays();
     int choix;
-    printCentered("Choisir un replay : ");
+    printCenteredPrompt("Choisir un replay : ");
     // Center cursor? No, just let them type.
     if (scanf("%d", &choix) != 1) return;
     int c; while ((c = getchar()) != '\n' && c != EOF); // Flush

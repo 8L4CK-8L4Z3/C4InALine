@@ -80,6 +80,23 @@ void printCentered(const char *format, ...) {
     }
 }
 
+void printCenteredPrompt(const char *format, ...) {
+    char buffer[2048];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+
+    int width = getTerminalWidth();
+    int len = visibleLength(buffer);
+    int padding = (width - len) / 2;
+    if (padding < 0) padding = 0;
+    
+    for (int i = 0; i < padding; i++) putchar(' ');
+    printf("%s", buffer);
+    fflush(stdout);
+}
+
 void printLogo() {
     const char *logo[] = {
         "  _____       _                                  _  _   ",

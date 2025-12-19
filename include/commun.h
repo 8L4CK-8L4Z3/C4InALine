@@ -15,6 +15,7 @@ typedef struct {
     int tempsLimite; // en secondes
     int autosave;    // 0 ou 1
     int modeJeu;     // 1: PvP, 2: PvC
+    int difficulty;  // 1: Easy, 2: Medium, 3: Hard
     char symboleJ1;
     char symboleJ2;
 } ParametresJeu;

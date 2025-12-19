@@ -14,7 +14,7 @@ void afficherMenu() {
     printCentered("4. Rejouer");
     printCentered("5. Statistiques");
     printCentered("6. Quitter");
-    printCentered("Veuillez choisir une option : ");
+    printCenteredPrompt("Veuillez choisir une option : ");
 }
 
 // Affiche les replays (exemple)

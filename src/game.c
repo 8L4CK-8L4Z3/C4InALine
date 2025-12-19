@@ -29,7 +29,7 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
     if (params->modeJeu == 2 && joueur == 2) {
         printCentered("L'ordinateur reflechit...");
         sleep(1);
-        col = calculerCoupOrdi(grille, rows, cols, params->symboleJ2, params->symboleJ1);
+        col = calculerCoupOrdi(grille, rows, cols, params->symboleJ2, params->symboleJ1, params->difficulty);
         char buf[100];
         snprintf(buf, sizeof(buf), "L'ordinateur joue en colonne %d", col);
         printCentered(buf);
@@ -54,8 +54,7 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
 
             // Display cursor
             clearScreen();
-            afficherGrille(grille, rows, cols, params);
-            
+
             // Render cursor line centered
             // We need to match afficherGrille centering logic.
             int termWidth = getTerminalWidth();
@@ -64,6 +63,7 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
             if (padding < 0) padding = 0;
             
             // Print cursor
+            printf("\n");
             for(int k=0; k<padding; k++) printf(" ");
             printf("  "); // Offset for row numbers
             for(int c=0; c<cols; c++) {
@@ -71,6 +71,8 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
                 else printf("  ");
             }
             printf("\n");
+
+            afficherGrille(grille, rows, cols, params);
             
             char prompt[200];
             snprintf(prompt, sizeof(prompt), "Joueur %d (%c) - Fleches pour bouger, Entree pour valider, 'S' pour sauver", joueur, symbole);

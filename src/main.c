@@ -5,6 +5,7 @@
 #include "stats.h"
 #include "config.h"
 #include "ui.h" // For printLogo if needed (called by afficherMenu)
+#include <unistd.h>
 
 // Prototypes
 void afficherMenu();
@@ -24,9 +25,19 @@ int main() {
     // Color IDs: 1=Red, 3=Yellow
     ParametresJeu parametres = {7, "rond", 1, 3, 30, 1, 2, 'X', 'O'}; 
     // modeJeu default 2 (PvC), symbols X/O
+    parametres.difficulty = 2; // Default Medium
     
     // Attempt load config
-    chargerConfig(&parametres);
+    if (!chargerConfig(&parametres)) {
+         // First time
+         clearScreen();
+         printLogo();
+         printCentered("Bienvenue ! C'est votre premiere partie.");
+         printCentered("Configuration initiale...");
+         sleep(2);
+         gererParametres(&parametres);
+         sauvegarderConfig(&parametres);
+    }
 
     do {
         afficherMenu();
@@ -44,7 +55,11 @@ int main() {
             case 3: {
                 int subChoix;
                 do {
-                    printf("\n1. Charger une partie\n2. (Sauvegarde en jeu)\n0. Retour\nChoix : ");
+                    clearScreen();
+                    printCentered("1. Charger une partie");
+                    printCentered("2. (Sauvegarde en jeu)");
+                    printCentered("0. Retour");
+                    printCenteredPrompt("Choix : ");
                     scanf("%d", &subChoix);
                     getchar();
                     switch(subChoix) {
@@ -52,7 +67,8 @@ int main() {
                             chargerPartie(&parametres);
                             break;
                         case 2:
-                            printf("Lancez une partie pour sauvegarder.\n");
+                            printCentered("Lancez une partie pour sauvegarder.");
+                            sleep(1);
                             break;
                         case 0:
                             break;
