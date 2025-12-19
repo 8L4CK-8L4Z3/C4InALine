@@ -23,9 +23,8 @@ int main() {
     int choix;
     // Defaults
     // Color IDs: 1=Red, 3=Yellow
-    ParametresJeu parametres = {7, "rond", 1, 3, 30, 1, 2, 'X', 'O'}; 
-    // modeJeu default 2 (PvC), symbols X/O
-    parametres.difficulty = 2; // Default Medium
+    ParametresJeu parametres = {7, "rond", 1, 3, 30, 1, 2, 2, 'X', 'O'}; 
+    // modeJeu default 2 (PvC), difficulty 2 (Medium), symbols X/O
     
     // Attempt load config
     if (!chargerConfig(&parametres)) {
@@ -46,56 +45,54 @@ int main() {
 
         switch (choix) {
             case 1:
-                jouerPartie(&parametres, NULL);
+                if (aDesSauvegardes()) {
+                    int subChoix;
+                    do {
+                        clearScreen();
+                        printCentered("1. Nouvelle Partie");
+                        printCentered("2. Charger une partie");
+                        printCentered("0. Retour");
+                        printCenteredPrompt("Choix : ");
+                        scanf("%d", &subChoix);
+                        getchar();
+                        if (subChoix == 1) {
+                            jouerPartie(&parametres, NULL);
+                            break;
+                        } else if (subChoix == 2) {
+                            chargerPartie(&parametres);
+                            break;
+                        } else if (subChoix == 0) {
+                            break;
+                        } else {
+                            printf("Option invalide.\n");
+                        }
+                    } while (subChoix != 0);
+                } else {
+                    jouerPartie(&parametres, NULL);
+                }
                 break;
             case 2:
                 gererParametres(&parametres);
                 sauvegarderConfig(&parametres); // Auto-save on change
                 break;
-            case 3: {
-                int subChoix;
-                do {
-                    clearScreen();
-                    printCentered("1. Charger une partie");
-                    printCentered("2. (Sauvegarde en jeu)");
-                    printCentered("0. Retour");
-                    printCenteredPrompt("Choix : ");
-                    scanf("%d", &subChoix);
-                    getchar();
-                    switch(subChoix) {
-                        case 1:
-                            chargerPartie(&parametres);
-                            break;
-                        case 2:
-                            printCentered("Lancez une partie pour sauvegarder.");
-                            sleep(1);
-                            break;
-                        case 0:
-                            break;
-                        default:
-                            printf("Option invalide.\n");
-                    }
-                } while (subChoix != 0);
-                break;
-            }
-            case 4:
+            case 3:
                 // Call the new replay viewer logic
                 // The prototype for afficherReplays in main was just a placeholder print
                 // We'll use the one from replay.h or call visionnerReplay directly
                 // But we need to include replay.h
                 visionnerReplay();
                 break;
-            case 5:
+            case 4:
                 afficherStats();
                 break;
-            case 6:
+            case 5:
                 printf("Quitter le jeu. Au revoir !\n");
                 sauvegarderConfig(&parametres);
                 break;
             default:
                 printf("Choix invalide, veuillez reessayer.\n");
         }
-    } while (choix != 6);
+    } while (choix != 5);
 
     return 0;
 }
