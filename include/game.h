@@ -5,5 +5,5 @@
 
 int jouerTour(int joueur, char **grille, int rows, int cols);
 int verifierVictoire(char **grille, int rows, int cols, char symbole);
-void jouerPartie();
+void jouerPartie(int rows, int cols);
 #endif //GAME_H
