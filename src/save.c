@@ -20,6 +20,11 @@ void chargerSauvegardesDepuisFichier() {
     }
 }
 
+int aDesSauvegardes() {
+    chargerSauvegardesDepuisFichier();
+    return nbSauvegardes > 0;
+}
+
 void ecrireSauvegardesFichier() {
     FILE *f = fopen(SAVE_FILE, "wb");
     if (f) {

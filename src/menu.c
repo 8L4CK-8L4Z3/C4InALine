@@ -10,10 +10,9 @@ void afficherMenu() {
     printLogo();
     printCentered("1. Jouer");
     printCentered("2. Parametres");
-    printCentered("3. Sauvegarder");
-    printCentered("4. Rejouer");
-    printCentered("5. Statistiques");
-    printCentered("6. Quitter");
+    printCentered("3. Rejouer");
+    printCentered("4. Statistiques");
+    printCentered("5. Quitter");
     printCenteredPrompt("Veuillez choisir une option : ");
 }
 

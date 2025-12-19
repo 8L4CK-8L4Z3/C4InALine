@@ -36,6 +36,7 @@ void afficherMenu();
 void afficherReplays();
 void gererParametres(ParametresJeu *params);
 void afficherSauvegardes();
+int aDesSauvegardes();
 void chargerPartie(ParametresJeu *currentParams);
 void sauvegarderPartie(char **grille, int rows, int cols, int joueurCourant, ParametresJeu *params, int *moves, int moveCount);
 void sauvegarderPartieSilencieuse(char **grille, int rows, int cols, int joueurCourant, ParametresJeu *params, int *moves, int moveCount);
