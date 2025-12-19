@@ -2,7 +2,10 @@
 
 ---
 
-**Auteur :** [Votre Nom / L'Équipe de Développement]
+**Auteur :**
+Ilyasse Bourzigui
+Khadija Zaher
+Doha Mutcho
 **Date :** Octobre 2023
 **Contexte :** Projet Académique / Développement Logiciel
 
@@ -78,34 +81,46 @@ Avant d'écrire la moindre ligne de code, nous avons identifié les besoins fonc
 Pour visualiser les interactions, nous avons établi un diagramme de cas d'utilisation.
 
 ```mermaid
-usecaseDiagram
-    actor Joueur as "Joueur Humain"
-    actor Systeme as "Système de Fichiers"
+graph LR
+    %% Actors
+    Joueur((Joueur<br>Humain))
+    Systeme[Système de<br>Fichiers]
 
-    package "Menu Principal" {
-        usecase "Configurer le Jeu" as UC_Config
-        usecase "Lancer une Partie" as UC_Play
-        usecase "Consulter Stats" as UC_Stats
-        usecase "Voir Replay" as UC_Replay
-    }
+    %% Package: Menu Principal
+    subgraph Menu_Principal [Menu Principal]
+        UC_Config(Configurer le Jeu)
+        UC_Play(Lancer une Partie)
+        UC_Stats(Consulter Stats)
+        UC_Replay(Voir Replay)
+    end
 
-    package "Jeu" {
-        usecase "Placer un Pion" as UC_Move
-        usecase "Sauvegarder Partie" as UC_Save
-        usecase "Gagner/Perdre" as UC_Win
-    }
+    %% Package: Jeu
+    subgraph Jeu [Jeu]
+        UC_Move(Placer un Pion)
+        UC_Save(Sauvegarder Partie)
+        UC_Win(Gagner/Perdre)
+    end
 
+    %% Relationships
     Joueur --> UC_Config
     Joueur --> UC_Play
     Joueur --> UC_Stats
     Joueur --> UC_Replay
 
-    UC_Play ..> UC_Move : include
-    UC_Move ..> UC_Win : include
-    UC_Move ..> UC_Save : extend
+    %% Includes and Extends
+    UC_Play -. include .-> UC_Move
+    UC_Move -. include .-> UC_Win
+    UC_Move -. extend .-> UC_Save
 
-    UC_Save --> Systeme : Écriture Binaire
-    UC_Replay --> Systeme : Lecture Historique
+    %% System Interactions
+    UC_Save -->|Écriture Binaire| Systeme
+    UC_Replay -->|Lecture Historique| Systeme
+
+    %% Styling to make it look like a Use Case diagram
+    classDef actor fill:#fff,stroke:#000,stroke-width:2px;
+    classDef usecase fill:#ececff,stroke:#333,stroke-width:1px,rx:20,ry:20;
+    class Joueur,Systeme actor;
+    class UC_Config,UC_Play,UC_Stats,UC_Replay,UC_Move,UC_Save,UC_Win usecase;
 ```
 
 Nous avons également modélisé le flux principal d'une partie pour comprendre l'enchaînement des états.
