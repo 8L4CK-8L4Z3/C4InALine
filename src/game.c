@@ -3,15 +3,15 @@
 #include <sys/select.h>
 #include <unistd.h>
 #include <time.h>
-#include <string.h>
 #include "game.h"
 #include "grid.h"
 #include "ai.h"
 #include "commun.h"
 #include "replay.h"
 #include "stats.h"
-#include "input.h"
 #include "ui.h"
+#include "input.h"
+#include <string.h>
 
 // Helper to clear input buffer
 void viderBuffer() {
@@ -20,78 +20,119 @@ void viderBuffer() {
 }
 
 // fonction pour jouer un tour
-// Returns: 1 if success, 0 if retry, -99 if save requested
-// Uses TUI arrow keys for human player
+// Returns: 1 if success, 0 if invalid move/retry needed, -99 if save requested
 int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *params, int *playedCol) {
     char symbole = (joueur == 1) ? params->symboleJ1 : params->symboleJ2;
-    static int cursorCol = 0; // State for cursor
-    if (cursorCol >= cols) cursorCol = cols - 1;
+    int col = -1;
 
     // AI Check
     if (params->modeJeu == 2 && joueur == 2) {
-        printf("L'ordinateur reflechit...\n");
-        int col = calculerCoupOrdi(grille, rows, cols, params->symboleJ2, params->symboleJ1);
-        printf("L'ordinateur joue en colonne %d\n", col);
-        sleep(1); // Short delay for UX
-        if (!insererPion(grille, col, symbole, rows, cols)) return 0;
-        if (playedCol) *playedCol = col;
-        return 1;
-    } 
-
-    // Human Player TUI
-    // Initial draw
-    clearScreen();
-    printf("\033[1;36m=== Tour Joueur %d (%c) ===\033[0m\n", joueur, symbole);
-    if (params->modeJeu == 1 || joueur == 1) {
-        printf("Utilisez GAUCHE/DROITE pour viser, ENTREE pour jouer, ESC pour sauver/quitter.\n");
-    }
-    afficherGrilleTUI(grille, rows, cols, params, cursorCol);
-
-    while (1) {
-        int key = readKey();
-        if (key == KEY_NONE) continue; // No redraw if no input
-
-        int moved = 0;
+        printCentered("L'ordinateur reflechit...");
+        sleep(1);
+        col = calculerCoupOrdi(grille, rows, cols, params->symboleJ2, params->symboleJ1);
+        char buf[100];
+        snprintf(buf, sizeof(buf), "L'ordinateur joue en colonne %d", col);
+        printCentered(buf);
+    } else {
+        // Human player with arrow keys
+        int selectedCol = 0;
+        configureTerminal();
         
-        if (key == KEY_LEFT) {
-            cursorCol--;
-            if (cursorCol < 0) cursorCol = cols - 1; // Wrap or clamp? Let's wrap.
-            moved = 1;
-        } else if (key == KEY_RIGHT) {
-            cursorCol++;
-            if (cursorCol >= cols) cursorCol = 0;
-            moved = 1;
-        } else if (key == KEY_ENTER) {
-            if (colonnePleine(grille, cursorCol, rows)) {
-                // Flash error?
-                printf("\a"); // Bell
-            } else {
-                if (insererPion(grille, cursorCol, symbole, rows, cols)) {
-                    if (playedCol) *playedCol = cursorCol;
-                    return 1;
+        // Loop for input
+        time_t start = time(NULL);
+        
+        while(1) {
+            // Check timeout
+            if (difftime(time(NULL), start) >= params->tempsLimite) {
+                restoreTerminal();
+                printCentered("\nTemps ecoule ! Vous passez votre tour (coup aleatoire).");
+                do {
+                    col = rand() % cols;
+                } while (colonnePleine(grille, col, rows));
+                break;
+            }
+
+            // Display cursor
+            clearScreen();
+            afficherGrille(grille, rows, cols, params);
+            
+            // Render cursor line centered
+            // We need to match afficherGrille centering logic.
+            int termWidth = getTerminalWidth();
+            int gridWidth = 2 + 2 * cols;
+            int padding = (termWidth - gridWidth) / 2;
+            if (padding < 0) padding = 0;
+            
+            // Print cursor
+            for(int k=0; k<padding; k++) printf(" ");
+            printf("  "); // Offset for row numbers
+            for(int c=0; c<cols; c++) {
+                if (c == selectedCol) printf("v "); // Cursor
+                else printf("  ");
+            }
+            printf("\n");
+            
+            char prompt[200];
+            snprintf(prompt, sizeof(prompt), "Joueur %d (%c) - Fleches pour bouger, Entree pour valider, 'S' pour sauver", joueur, symbole);
+            printCentered(prompt);
+            printf("\n"); // Flush
+
+            // Check input with select (for timeout precision, though time(NULL) check above handles it coarsely)
+            // But readKey is blocking? No, we set VMIN=0. But wait, VMIN=0 means non-blocking.
+            // If VMIN=0, read returns 0 immediately if no input.
+            // We should use select to wait for input OR timeout.
+            
+            fd_set set;
+            struct timeval timeout;
+            FD_ZERO(&set);
+            FD_SET(STDIN_FILENO, &set);
+            timeout.tv_sec = 0;
+            timeout.tv_usec = 100000; // 0.1 sec refresh for timer check
+
+            int rv = select(STDIN_FILENO + 1, &set, NULL, NULL, &timeout);
+            
+            if (rv > 0) {
+                int key = readKey();
+                if (key == KEY_RIGHT) {
+                    selectedCol = (selectedCol + 1) % cols;
+                } else if (key == KEY_LEFT) {
+                    selectedCol = (selectedCol - 1 + cols) % cols;
+                } else if (key == KEY_ENTER) {
+                    col = selectedCol;
+                    restoreTerminal();
+                    break;
+                } else if (key == 's' || key == 'S') {
+                    col = -99;
+                    restoreTerminal();
+                    break;
                 }
             }
-        } else if (key == KEY_ESC) {
-            return -99;
         }
         
-        if (moved) {
-            clearScreen();
-            printf("\033[1;36m=== Tour Joueur %d (%c) ===\033[0m\n", joueur, symbole);
-            if (params->modeJeu == 1 || joueur == 1) {
-                printf("Utilisez GAUCHE/DROITE pour viser, ENTREE pour jouer, ESC pour sauver/quitter.\n");
-            }
-            afficherGrilleTUI(grille, rows, cols, params, cursorCol);
-        }
+        restoreTerminal();
     }
+
+    if (col == -99) return -99;
+
+    if (!insererPion(grille, col, symbole, rows, cols)) {
+        printCentered(" Colonne invalide ou pleine ! Reessayez.");
+        // If invalid, we need to loop again?
+        // Recursive call? Or return 0. 
+        // Returning 0 causes loop in jouerPartie.
+        sleep(1);
+        return 0;
+    }
+
+    if (playedCol) *playedCol = col;
+    return 1;
 }
 
-// fonction pour v\xe9rifier la victoire d'un joueur
+// fonction pour vérifier la victoire d'un joueur
 int verifierVictoire(char **grille, int rows, int cols, char symbole) {
     return verifierGrille(grille, rows, cols, symbole);
 }
 
-// fonction pour v\xe9rifier si la grille est pleine
+// fonction pour vérifier si la grille est pleine
 static int grillePleine(char **grille, int rows, int cols) {
     for (int j = 0; j < cols; j++) {
         if (!colonnePleine(grille, j, rows))
@@ -100,7 +141,7 @@ static int grillePleine(char **grille, int rows, int cols) {
     return 1;
 }
 
-// fonction pour jouer une partie compl\xe8te
+// fonction pour jouer une partie complète
 void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
     int rows = params->tailleGrille;
     int cols = params->tailleGrille;
@@ -116,16 +157,14 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
             }
         }
         joueur = saveToResume->joueurCourant;
-        clearScreen();
         printf("Partie reprise. Joueur %d a vous !\n", joueur);
-        sleep(1);
     }
 
     time_t startTime = time(NULL);
     char symbole;
 
     // Replay recording
-    int moves[MAX_MOVES_TOTAL]; // Fixed size macro
+    int moves[MAX_MOVES_TOTAL];
     int moveCount = 0;
 
     // Resume moves
@@ -136,10 +175,10 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
         }
     }
 
-    // Enable TUI Raw Mode just in case it was disabled
-    enableRawMode();
-
     while (1) {
+        clearScreen();
+        afficherGrille(grille, rows, cols, params);
+        
         // Autosave check
         if (params->autosave) {
              sauvegarderPartieSilencieuse(grille, rows, cols, joueur, params, moves, moveCount);
@@ -147,16 +186,15 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
         
         int result;
         int playedCol = -1;
-        
-        result = jouerTour(joueur, grille, rows, cols, params, &playedCol);
-        
-        if (result == -99) {
-            disableRawMode(); // Need to type filename
-            sauvegarderPartie(grille, rows, cols, joueur, params, moves, moveCount);
-            enableRawMode();
-            libererGrille(grille, rows);
-            return; // Exit game
-        }
+        do {
+            result = jouerTour(joueur, grille, rows, cols, params, &playedCol);
+            
+            if (result == -99) {
+                sauvegarderPartie(grille, rows, cols, joueur, params, moves, moveCount);
+                libererGrille(grille, rows);
+                return; // Exit game
+            }
+        } while (result == 0);
         
         if (moveCount < MAX_MOVES_TOTAL) {
             moves[moveCount++] = playedCol;
@@ -164,25 +202,23 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
 
         symbole = (joueur == 1) ? params->symboleJ1 : params->symboleJ2;
 
-        // v\xe9rifier victoire
+        // vérifier victoire
         if (verifierVictoire(grille, rows, cols, symbole)) {
             clearScreen();
-            afficherGrilleTUI(grille, rows, cols, params, -1);
-            printf("\n\033[1;32m*** VICTOIRE ! Joueur %d (%c) a gagne ! ***\033[0m\n", joueur, symbole);
-            printf("Appuyez sur une touche pour quitter...");
-            readKey(); // Wait for key
+            afficherGrille(grille, rows, cols, params);
+            char buf[200];
+            snprintf(buf, sizeof(buf), "\n\033[1;32m*** VICTOIRE ! Joueur %d (%c) a gagne ! ***\033[0m", joueur, symbole);
+            printCentered(buf);
             sauvegarderReplay(moves, moveCount, rows, cols, params, joueur);
             mettreAJourStats(joueur, (int)difftime(time(NULL), startTime));
             break;
         }
 
-        // v\xe9rifier match nul
+        // vérifier match nul
         if (grillePleine(grille, rows, cols)) {
             clearScreen();
-            afficherGrilleTUI(grille, rows, cols, params, -1);
-            printf("\n\033[1;33m*** MATCH NUL ! La grille est pleine. ***\033[0m\n");
-             printf("Appuyez sur une touche pour quitter...");
-            readKey(); // Wait for key
+            afficherGrille(grille, rows, cols, params);
+            printCentered("\n\033[1;33m*** MATCH NUL ! La grille est pleine. ***\033[0m");
             sauvegarderReplay(moves, moveCount, rows, cols, params, 0);
             mettreAJourStats(0, (int)difftime(time(NULL), startTime));
             break;
@@ -193,5 +229,7 @@ void jouerPartie(ParametresJeu *params, PartieSauvegardee *saveToResume) {
     }
 
     libererGrille(grille, rows);
-    // disableRawMode handled by main or next menu loop
+    printCentered("Appuyez sur Entree pour continuer...");
+    getchar(); // Wait for user
+    getchar();
 }

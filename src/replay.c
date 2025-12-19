@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "replay.h"
 #include "grid.h"
+#include "ui.h"
 
 #define REPLAY_FILE "replays.dat"
 #define MAX_REPLAYS 10
@@ -59,12 +60,14 @@ void sauvegarderReplay(int *moves, int moveCount, int rows, int cols, Parametres
 void afficherListeReplays() {
     chargerReplaysDepuisFichier();
     if (nbReplays == 0) {
-        printf("Aucun replay disponible.\n");
+        printCentered("Aucun replay disponible.");
         return;
     }
-    printf("\n=== Replays ===\n");
+    printCentered("\n=== Replays ===");
+    char buf[100];
     for(int i=0; i<nbReplays; i++) {
-        printf("%d. %s\n", i+1, replays[i].nomReplay);
+        snprintf(buf, sizeof(buf), "%d. %s", i+1, replays[i].nomReplay);
+        printCentered(buf);
     }
 }
 
@@ -74,7 +77,8 @@ void visionnerReplay() {
 
     afficherListeReplays();
     int choix;
-    printf("Choisir un replay : ");
+    printCentered("Choisir un replay : ");
+    // Center cursor? No, just let them type.
     if (scanf("%d", &choix) != 1) return;
     int c; while ((c = getchar()) != '\n' && c != EOF); // Flush
 
@@ -86,13 +90,18 @@ void visionnerReplay() {
     ReplayData *rd = &replays[choix-1];
     char **grille = creerGrille(rd->rows, rd->cols);
     
-    printf("Demarrage du replay...\n");
+    clearScreen();
+    printCentered("Demarrage du replay...");
     afficherGrille(grille, rd->rows, rd->cols, &rd->params);
     sleep(1);
 
     int joueur = 1;
     for(int i=0; i<rd->moveCount; i++) {
-        printf("Tour %d : Joueur %d joue colonne %d\n", i+1, joueur, rd->moves[i]);
+        clearScreen();
+        char buf[100];
+        snprintf(buf, sizeof(buf), "Tour %d : Joueur %d joue colonne %d", i+1, joueur, rd->moves[i]);
+        printCentered(buf);
+        
         char sym = (joueur == 1) ? rd->params.symboleJ1 : rd->params.symboleJ2;
         insererPion(grille, rd->moves[i], sym, rd->rows, rd->cols);
         afficherGrille(grille, rd->rows, rd->cols, &rd->params);
@@ -100,6 +109,6 @@ void visionnerReplay() {
         sleep(1);
     }
 
-    printf("Fin du replay.\n");
+    printCentered("Fin du replay.");
     libererGrille(grille, rd->rows);
 }

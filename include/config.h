@@ -3,10 +3,7 @@
 
 #include "commun.h"
 
-// Load settings from config.dat. Returns 1 if success, 0 if not found/error.
-int loadGlobalConfig(ParametresJeu *p);
-
-// Save settings to config.dat
-void saveGlobalConfig(ParametresJeu *p);
+void chargerConfig(ParametresJeu *params);
+void sauvegarderConfig(ParametresJeu *params);
 
 #endif

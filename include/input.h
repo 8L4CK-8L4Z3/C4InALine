@@ -2,19 +2,15 @@
 #define INPUT_H
 
 // Key codes
-enum Key {
-    KEY_NONE = 0,
-    KEY_ENTER = 10,
-    KEY_ESC = 27,
-    KEY_UP = 1001,
-    KEY_DOWN = 1002,
-    KEY_LEFT = 1003,
-    KEY_RIGHT = 1004,
-    KEY_BACKSPACE = 127
-};
+#define KEY_UP 65
+#define KEY_DOWN 66
+#define KEY_RIGHT 67
+#define KEY_LEFT 68
+#define KEY_ENTER 10
+#define KEY_ESCAPE 27
 
-void enableRawMode();
-void disableRawMode();
-int readKey();
+void configureTerminal();
+void restoreTerminal();
+int readKey(); // Returns key code or character
 
 #endif

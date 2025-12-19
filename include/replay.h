@@ -3,7 +3,8 @@
 
 #include "commun.h"
 
-#define MAX_MOVES (MAX_ROWS * MAX_COLS)
+// Use MAX_MOVES_TOTAL from commun.h
+#define MAX_MOVES MAX_MOVES_TOTAL
 
 typedef struct {
     char nomReplay[50];

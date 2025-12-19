@@ -2,6 +2,7 @@
 #include <string.h>
 #include "commun.h"
 #include "game.h" // For jouerPartie prototype
+#include "ui.h"
 
 #define SAVE_FILE "sauvegardes.dat"
 
@@ -29,38 +30,40 @@ void ecrireSauvegardesFichier() {
     }
 }
 
-// Affiche les parties sauvegard\xe9es
+// Affiche les parties sauvegardées
 void afficherSauvegardes() {
     chargerSauvegardesDepuisFichier();
     if (nbSauvegardes == 0) {
-        printf("Aucune sauvegarde disponible.\n");
+        printCentered("Aucune sauvegarde disponible.");
     } else {
-        printf("\n=== Sauvegardes ===\n");
+        printCentered("\n=== Sauvegardes ===");
+        char buf[200];
         for (int i = 0; i < nbSauvegardes; i++) {
-            printf("%d. %s (Grille %dx%d, Joueur %d)\n", 
+            snprintf(buf, sizeof(buf), "%d. %s (Grille %dx%d, Joueur %d)", 
                    i+1, 
                    sauvegardes[i].nomPartie, 
                    sauvegardes[i].parametres.tailleGrille,
                    sauvegardes[i].parametres.tailleGrille,
                    sauvegardes[i].joueurCourant);
+            printCentered(buf);
         }
     }
 }
 
-// Charge une partie sauvegard\xe9e
+// Charge une partie sauvegardée
 void chargerPartie(ParametresJeu *currentParams) {
     chargerSauvegardesDepuisFichier();
     if (nbSauvegardes == 0) {
-        printf("Aucune sauvegarde a charger.\n");
+        printCentered("Aucune sauvegarde a charger.");
         return;
     }
     afficherSauvegardes();
     int choix;
-    printf("Choisissez le numero de la partie a charger : ");
+    printCentered("Choisissez le numero de la partie a charger : ");
     scanf("%d", &choix);
     getchar();
     if (choix < 1 || choix > nbSauvegardes) {
-        printf("Num\xe9ro invalide.\n");
+        printf("Numéro invalide.\n");
         return;
     }
     
@@ -90,11 +93,11 @@ void sauvegarderPartie(char **grille, int rows, int cols, int joueurCourant, Par
     printf("Entrez un nom pour la sauvegarde : ");
     // Clear buffer if needed?
     // Clear buffer properly
-    // With TUI raw mode, we don't have leftover newlines from scanf usually.
-    // But if we came from legacy path, maybe?
-    // Safer to just read. If empty, fgets waits.
-    // Removing the blocking consume loop.
-    
+    // The -99 input was via scanf("%d"), leaving newline in buffer.
+    // We need to consume until newline.
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+
     fgets(nouvellePartie.nomPartie, sizeof(nouvellePartie.nomPartie), stdin);
     nouvellePartie.nomPartie[strcspn(nouvellePartie.nomPartie, "\n")] = 0;
 
@@ -128,5 +131,5 @@ void sauvegarderPartie(char **grille, int rows, int cols, int joueurCourant, Par
 
     sauvegardes[nbSauvegardes++] = nouvellePartie;
     ecrireSauvegardesFichier();
-    printf("Partie sauvegard\xe9" "e sous le nom : %s\n", nouvellePartie.nomPartie);
+    printf("Partie sauvegardée sous le nom : %s\n", nouvellePartie.nomPartie);
 }

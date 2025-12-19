@@ -1,7 +1,6 @@
-#include <stdio.h>
-#include <string.h>
 #include "grid.h"
 #include "ui.h"
+#include <string.h>
 
 char** creerGrille(int rows, int cols){
     char **grille = malloc(rows * sizeof(char*));
@@ -34,28 +33,36 @@ const char* getAnsiColor(int c) {
     }
 }
 
-// Params: cursorCol is the column index where the player cursor is (-1 if none)
-void afficherGrilleTUI(char **grille, int rows, int cols, ParametresJeu *params, int cursorCol) {
-    // We assume clearScreen is called before
+void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params){
+    int termWidth = getTerminalWidth();
+    // Grid width calculation:
+    // Header row: "  0 1 2 ..."
+    // Each cell is 2 chars ("0 "), plus initial "  ".
+    // Actually header: "  " + (cols * 2 chars) -> 2 + 2*cols.
     
-    // Print Cursor Row
-    printf("\n  ");
-    for(int c=0; c<cols; c++) {
-        if (c == cursorCol) {
-            printf("\033[1;37mV \033[0m"); // Cursor
-        } else {
-            printf("  ");
-        }
+    // Grid rows: "0 . . . "
+    // "0 " (2 chars) + cols * 2 chars ("X ") -> 2 + 2*cols.
+    
+    int gridWidth = 2 + 2 * cols;
+    int padding = (termWidth - gridWidth) / 2;
+    if (padding < 0) padding = 0;
+    
+    // Print header
+    printf("\n");
+    for(int k=0; k<padding; k++) printf(" ");
+    printf("  ");
+    for(int c=0;c<cols;c++){
+        printf("%d ",c);//afficher le num de chaque col
     }
     printf("\n");
 
-    // Print Grid
-    for(int i=0; i<rows; i++){
-        printf("  "); // Margin
-        for(int j=0; j<cols; j++){
+    for(int i=0;i<rows;i++){
+        for(int k=0; k<padding; k++) printf(" ");
+        printf("%d ",i);
+        for(int j=0;j<cols;j++){
             char sym = grille[i][j];
             if (sym == '.') {
-                printf("\033[90m. \033[0m"); // Dark grey for dots
+                printf(". ");
             } else {
                 const char *colorCode = "\033[0m";
                 if (sym == params->symboleJ1) colorCode = getAnsiColor(params->colorJ1);
@@ -66,17 +73,7 @@ void afficherGrilleTUI(char **grille, int rows, int cols, ParametresJeu *params,
         }
         printf("\n");
     }
-    
-    // Column numbers
-    printf("  ");
-    for(int c=0;c<cols;c++){
-        printf("%d ", c%10);
-    }
     printf("\n");
-}
-
-void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params){
-    afficherGrilleTUI(grille, rows, cols, params, -1);
 }
 
 int colonnePleine(char **grille, int col, int rows) {

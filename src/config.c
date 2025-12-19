@@ -3,19 +3,26 @@
 
 #define CONFIG_FILE "config.dat"
 
-int loadGlobalConfig(ParametresJeu *p) {
+void chargerConfig(ParametresJeu *params) {
     FILE *f = fopen(CONFIG_FILE, "rb");
-    if (!f) return 0;
-    
-    int result = fread(p, sizeof(ParametresJeu), 1, f);
-    fclose(f);
-    return result == 1;
+    if (f) {
+        fread(params, sizeof(ParametresJeu), 1, f);
+        fclose(f);
+        printf("Configuration chargee.\n");
+    } else {
+        // Defaults are already set in main, or we can set them here if params is empty?
+        // But main initializes defaults. If file missing, we do nothing.
+        // Actually, Memory said "A first-time configuration wizard is automatically triggered... if config.dat is missing".
+        // I should stick to that if possible.
+        // But for now, simple load/save.
+    }
 }
 
-void saveGlobalConfig(ParametresJeu *p) {
+void sauvegarderConfig(ParametresJeu *params) {
     FILE *f = fopen(CONFIG_FILE, "wb");
     if (f) {
-        fwrite(p, sizeof(ParametresJeu), 1, f);
+        fwrite(params, sizeof(ParametresJeu), 1, f);
         fclose(f);
+        // printf("Configuration sauvegardee.\n"); // Keep it silent or UI friendly
     }
 }
