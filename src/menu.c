@@ -2,10 +2,15 @@
 #include "commun.h"
 #include "ui.h"
 #include "input.h" // For readKey, configureTerminal...
+#include <stdlib.h> // for system
+
+#ifdef _WIN32
+#include <windows.h>
+#include <conio.h>
+#else
 #include <sys/select.h>
 #include <unistd.h>
-
-#include <stdlib.h> // for system
+#endif
 
 // Helper generic menu
 int menuSelection(const char *titre, const char *options[], int nbOptions) {
@@ -56,10 +61,16 @@ int menuSelection(const char *titre, const char *options[], int nbOptions) {
         // printCenteredPrompt("\nUtilisez les fleches haut/bas et Entree pour valider."); // Removed per request
 
         // Wait for input to avoid busy loop
+#ifdef _WIN32
+        while (!_kbhit()) {
+            Sleep(10);
+        }
+#else
         fd_set set;
         FD_ZERO(&set);
         FD_SET(STDIN_FILENO, &set);
         select(STDIN_FILENO + 1, &set, NULL, NULL, NULL);
+#endif
 
         int key = readKey();
         if (key == KEY_UP) {

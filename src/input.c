@@ -1,16 +1,33 @@
 #include "input.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#include <conio.h>
+static DWORD orig_console_mode;
+static int raw_mode_enabled = 0;
+#else
 #include <unistd.h>
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-
 static struct termios orig_termios;
 static int raw_mode_enabled = 0;
+#endif
 
 void configureTerminal() {
     if (raw_mode_enabled) return;
+#ifdef _WIN32
+    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+    if (hIn == INVALID_HANDLE_VALUE) return;
+    GetConsoleMode(hIn, &orig_console_mode);
+    atexit(restoreTerminal);
+
+    // Disable line input and echo input
+    DWORD new_mode = orig_console_mode & ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
+    SetConsoleMode(hIn, new_mode);
+#else
     tcgetattr(STDIN_FILENO, &orig_termios);
     atexit(restoreTerminal);
 
@@ -20,16 +37,43 @@ void configureTerminal() {
     raw.c_cc[VTIME] = 0;
 
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+#endif
     raw_mode_enabled = 1;
 }
 
 void restoreTerminal() {
     if (!raw_mode_enabled) return;
+#ifdef _WIN32
+    HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+    if (hIn != INVALID_HANDLE_VALUE) {
+        SetConsoleMode(hIn, orig_console_mode);
+    }
+#else
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
+#endif
     raw_mode_enabled = 0;
 }
 
 int readKey() {
+#ifdef _WIN32
+    if (_kbhit()) {
+        int c = _getch();
+        if (c == 0 || c == 224) { // Special key
+            c = _getch();
+            switch(c) {
+                case 72: return KEY_UP;
+                case 80: return KEY_DOWN;
+                case 77: return KEY_RIGHT;
+                case 75: return KEY_LEFT;
+            }
+            return 0; // Unknown special
+        }
+        if (c == 13) return KEY_ENTER;
+        if (c == 27) return KEY_ESCAPE;
+        return c;
+    }
+    return 0;
+#else
     char c;
     int nread = read(STDIN_FILENO, &c, 1);
     if (nread == 0) return 0; // Nothing read
@@ -51,4 +95,5 @@ int readKey() {
         return KEY_ESCAPE;
     }
     return c;
+#endif
 }

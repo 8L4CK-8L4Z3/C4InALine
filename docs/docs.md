@@ -251,7 +251,12 @@ This document lists all functions in the repository, describing their inputs, ou
 ### `getTerminalHeight`
 *   **Input**: None
 *   **Output**: `int` (number of rows)
-*   **Function**: Returns the current height of the terminal window.
+*   **Function**: Returns the current height of the terminal window. (Supports Windows `GetConsoleScreenBufferInfo` and POSIX `ioctl`).
+
+### `setupConsole`
+*   **Input**: None
+*   **Output**: `void`
+*   **Function**: (Windows only) Enables ANSI escape codes (Virtual Terminal Processing) and sets UTF-8 code page. No-op on other platforms.
 
 ### `visibleLength` (static)
 *   **Input**: `const char *s`
