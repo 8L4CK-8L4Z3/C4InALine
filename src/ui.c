@@ -2,74 +2,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
-
-#ifdef _WIN32
-#include <windows.h>
-#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
-#endif
-#else
 #include <sys/ioctl.h>
 #include <unistd.h>
-#endif
-
-void setupConsole() {
-#ifdef _WIN32
-    // Enable ANSI escape codes
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (hOut == INVALID_HANDLE_VALUE) return;
-    DWORD dwMode = 0;
-    if (!GetConsoleMode(hOut, &dwMode)) return;
-    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(hOut, dwMode);
-
-    // Set UTF-8 code page just in case
-    SetConsoleOutputCP(CP_UTF8);
-#endif
-}
+#include <stdarg.h>
 
 void clearScreen() {
-#ifdef _WIN32
-    // Since we enabled ANSI, we can use the same code,
-    // OR use system("cls") if ANSI fails.
-    // Let's stick to ANSI as we enabled it.
     printf("\033[H\033[J");
-#else
-    printf("\033[H\033[J");
-#endif
 }
 
 int getTerminalWidth() {
-#ifdef _WIN32
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
-        return csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    }
-    return 80;
-#else
     struct winsize w;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
         return w.ws_col;
     }
     return 80; // Default fallback
-#endif
 }
 
 int getTerminalHeight() {
-#ifdef _WIN32
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
-        return csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-    }
-    return 24;
-#else
     struct winsize w;
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
         return w.ws_row;
     }
     return 24; // Default fallback
-#endif
 }
 
 // Helper to calculate visible length ignoring ANSI codes

@@ -5,12 +5,7 @@
 #include "stats.h"
 #include "config.h"
 #include "ui.h" // For printLogo if needed (called by afficherMenu)
-#ifdef _WIN32
-#include <windows.h>
-#define sleep(x) Sleep((x)*1000)
-#else
 #include <unistd.h>
-#endif
 
 // Prototypes
 void afficherMenu();
@@ -23,9 +18,6 @@ void afficherReplays();
 #include <time.h>
 
 int main() {
-#ifdef _WIN32
-    setupConsole();
-#endif
     srand(time(NULL)); // Init random seed once
 
     int choix;
