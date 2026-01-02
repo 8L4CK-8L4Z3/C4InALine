@@ -23,7 +23,7 @@ void setupConsole() {
     if (!GetConsoleMode(hOut, &dwMode)) return;
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(hOut, dwMode);
-
+    
     // Set UTF-8 code page just in case
     SetConsoleOutputCP(CP_UTF8);
 #endif
@@ -31,8 +31,8 @@ void setupConsole() {
 
 void clearScreen() {
 #ifdef _WIN32
-    // Since we enabled ANSI, we can use the same code,
-    // OR use system("cls") if ANSI fails.
+    // Since we enabled ANSI, we can use the same code, 
+    // OR use system("cls") if ANSI fails. 
     // Let's stick to ANSI as we enabled it.
     printf("\033[H\033[J");
 #else

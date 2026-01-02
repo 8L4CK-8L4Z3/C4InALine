@@ -13,6 +13,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <conio.h>
 #define sleep(x) Sleep((x)*1000)
 #else
 #include <sys/select.h>

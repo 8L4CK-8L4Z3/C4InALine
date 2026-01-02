@@ -23,7 +23,7 @@ void configureTerminal() {
     if (hIn == INVALID_HANDLE_VALUE) return;
     GetConsoleMode(hIn, &orig_console_mode);
     atexit(restoreTerminal);
-
+    
     // Disable line input and echo input
     DWORD new_mode = orig_console_mode & ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
     SetConsoleMode(hIn, new_mode);
