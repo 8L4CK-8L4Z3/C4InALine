@@ -4,12 +4,16 @@ A Connect 4 game implementation in C with a Text User Interface (TUI).
 Supports Player vs Player and Player vs Computer (AI with multiple difficulties).
 
 ## Features
-- Interactive Menu
-- Save/Load Game
-- Replay System
-- Statistics
-- Customizable Settings (Board size, colors, symbols, difficulty)
-- Cross-platform (Linux/macOS/Windows)
+- **Interactive Menu:** Navigate through options using arrow keys.
+- **Save/Load Game:** Save your progress and resume later.
+- **Replay System:** Watch replays of past games move-by-move.
+- **Statistics:** Track wins, losses, and play time.
+- **Customizable Settings:**
+    - Board size (4x4 to 20x20)
+    - Player symbols and colors
+    - AI difficulty (Easy, Medium, Hard)
+    - Time limit per turn
+- **Cross-platform:** Runs on Linux, macOS, and Windows.
 
 ## Compilation and Execution
 
@@ -32,7 +36,7 @@ Requirements: MinGW (GCC) or compatible C compiler.
 
 1. Open Command Prompt or PowerShell.
 2. Navigate to the project root.
-3. Compile using GCC (ensure `src` files are included):
+3. Compile using GCC:
    ```cmd
    gcc -o game.exe src/*.c -Iinclude
    ```
@@ -43,7 +47,7 @@ Requirements: MinGW (GCC) or compatible C compiler.
    ```
 
 ## Controls
-- **Arrow Keys (Left/Right):** Select column / Navigate menus
-- **Arrow Keys (Up/Down):** Navigate menus
-- **Enter:** Confirm selection / Drop token
-- **S:** Save game during play
+- **Arrow Keys (Left/Right):** Select column in game / Navigate menus (Up/Down for menus as well).
+- **Arrow Keys (Up/Down):** Navigate vertical menus.
+- **Enter:** Confirm selection / Drop token.
+- **S:** Save game during play (when it's your turn).
