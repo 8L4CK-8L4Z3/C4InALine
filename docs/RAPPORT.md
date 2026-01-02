@@ -73,7 +73,7 @@ Avant d'écrire la moindre ligne de code, nous avons identifié les besoins fonc
 
 **Besoins Non-Fonctionnels :**
 *   **Performance :** L'IA doit répondre dans un délai raisonnable (moins de 2-3 secondes).
-*   **Portabilité :** Le code doit être standard (C99/C11) et fonctionner dans un environnement Unix/Linux.
+*   **Portabilité :** Le code doit être standard (C99/C11) et fonctionner dans un environnement Unix/Linux ainsi que Windows.
 *   **Ergonomie :** L'interface textuelle doit être claire, centrée, et utilisable au clavier (flèches directionnelles).
 
 ### 1.3 Modélisation Fonctionnelle
@@ -158,7 +158,7 @@ stateDiagram-v2
 
 *   **Langage C :** Choisi pour sa performance brute et sa gestion fine de la mémoire, essentielle pour implémenter des algorithmes récursifs comme le Minimax sans surcharge (overhead) excessive.
 *   **Makefile :** Utilisé pour l'automatisation de la compilation. La compilation séparée a été privilégiée pour éviter de recompiler tout le projet à chaque modification mineure.
-*   **Bibliothèques Standard :** Nous nous sommes limités à la bibliothèque standard (`stdio.h`, `stdlib.h`, `string.h`, `time.h`) et aux appels système POSIX (`unistd.h`, `termios.h`) pour la gestion du terminal, évitant ainsi des dépendances lourdes comme `ncurses` pour garder le contrôle total sur le flux de sortie.
+*   **Bibliothèques Standard :** Nous nous sommes limités à la bibliothèque standard (`stdio.h`, `stdlib.h`, `string.h`, `time.h`) et aux appels système POSIX (`unistd.h`, `termios.h`) pour la gestion du terminal sous Unix, et aux API Windows (`windows.h`, `conio.h`) pour assurer la compatibilité multiplateforme.
 
 ### 2.2 Structure Modulaire du Projet
 
@@ -244,7 +244,7 @@ Pour améliorer les performances et permettre une recherche plus profonde, nous 
 
 #### Niveaux de Difficulté
 *   **Facile (1) :** Coup purement aléatoire.
-*   **Moyen (2) :** Une heuristique simple : si l'IA peut gagner immédiatement, elle le fait. Sinon, si l'adversaire peut gagner au coup suivant, elle bloque. Sinon, elle joue aléatoirement.
+*   **Moyen (2) :** L'IA vérifie d'abord si elle peut gagner immédiatement. Si non, elle vérifie si l'adversaire peut gagner au coup suivant et le bloque. Sinon, elle joue aléatoirement.
 *   **Difficile (3) :** Utilisation complète du Minimax avec une profondeur de 5 coups, permettant d'anticiper les pièges et de construire des attaques complexes.
 
 ---
@@ -257,19 +257,19 @@ L'un des défis majeurs était de rendre une application console "agréable" et 
 
 Nous avons utilisé intensivement les **séquences d'échappement ANSI** pour :
 *   **Couleurs :** Différencier les joueurs (Rouge, Jaune, Cyan, etc.).
-*   **Positionnement :** Centrer le texte horizontalement et verticalement. Une fonction dédiée calcule la taille du terminal via `ioctl` (appel système) pour ajuster les marges dynamiquement.
+*   **Positionnement :** Centrer le texte horizontalement et verticalement. Une fonction dédiée calcule la taille du terminal via `ioctl` (POSIX) ou `GetConsoleScreenBufferInfo` (Windows) pour ajuster les marges dynamiquement.
 *   **Nettoyage :** Effacer l'écran ou revenir au début de la ligne pour des mises à jour fluides sans scintillement excessif.
 
 ### 4.2 Gestion des Entrées Utilisateur
 
 Pour une navigation intuitive (flèches directionnelles), l'entrée standard (`stdin`) ne pouvait pas rester en mode "canonique" (où l'entrée n'est validée qu'après Entrée).
 
-Nous avons configuré le terminal en mode **Raw** via la structure `termios`. Cela permet :
+Nous avons configuré le terminal en mode **Raw** via la structure `termios` sous Unix et `SetConsoleMode` sous Windows. Cela permet :
 *   De lire chaque touche instantanément.
-*   De détecter les séquences multi-octets envoyées par les touches fléchées (ex: `Esc [ A`).
+*   De détecter les séquences multi-octets envoyées par les touches fléchées (ex: `Esc [ A` ou codes spéciaux Windows).
 *   D'implémenter un curseur visuel au-dessus de la grille qui se déplace latéralement.
 
-Le système utilise également `select()` pour gérer les timeouts (temps limite par tour) sans bloquer le programme indéfiniment sur une attente de touche.
+Le système utilise également `select()` (Unix) ou `_kbhit()` (Windows) pour gérer les timeouts (temps limite par tour) sans bloquer le programme indéfiniment sur une attente de touche.
 
 ---
 
@@ -296,8 +296,8 @@ Les parties sont stockées dans un fichier binaire `sauvegardes.dat`. Chaque sau
 **Solution :** Vérification rigoureuse des bornes de la grille avant toute simulation et utilisation de copies temporaires de la grille (ou d'annulations de coups : backtracking) pour ne pas corrompre l'état réel du jeu.
 
 ### 3. Portabilité des Séquences ANSI
-**Problème :** L'affichage variait selon les émulateurs de terminal.
-**Solution :** Standardisation sur les codes ANSI les plus communs et calcul dynamique des dimensions du terminal à chaque rafraîchissement pour s'adapter au redimensionnement de la fenêtre.
+**Problème :** L'affichage variait selon les émulateurs de terminal, et les codes ANSI n'étaient pas interprétés par défaut sous Windows CMD.
+**Solution :** Standardisation sur les codes ANSI les plus communs, calcul dynamique des dimensions du terminal, et activation explicite du mode `ENABLE_VIRTUAL_TERMINAL_PROCESSING` sous Windows via l'API Win32.
 
 ---
 
@@ -319,7 +319,7 @@ Ce projet restera une pierre angulaire de notre parcours académique, témoignan
 **BIBLIOGRAPHIE**
 
 1.  *The C Programming Language*, Brian Kernighan & Dennis Ritchie.
-2.  Documentation POSIX (termios, unistd).
+2.  Documentation POSIX (termios, unistd) et Microsoft Win32 API.
 3.  *Artificial Intelligence: A Modern Approach*, Stuart Russell & Peter Norvig (pour les concepts Minimax).
 4.  Ressources communautaires sur l'implémentation des jeux de plateau (StrategyWiki, GitHub).
 

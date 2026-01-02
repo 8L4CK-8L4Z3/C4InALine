@@ -7,7 +7,10 @@ Ce document liste toutes les fonctions du dépôt, en décrivant leurs entrées,
 ### `calculerCoupOrdi`
 *   **Entrée** : `char **grille` (grille de jeu), `int rows`, `int cols`, `char symboleOrdi`, `char symboleJoueur`, `int difficulty`
 *   **Sortie** : `int` (index de la colonne)
-*   **Fonction** : Calcule le meilleur coup pour l'ordinateur en fonction du niveau de difficulté. Niveau 1 est aléatoire, Niveau 2 bloque/gagne immédiatement, Niveau 3 utilise Minimax.
+*   **Fonction** : Calcule le meilleur coup pour l'ordinateur en fonction du niveau de difficulté.
+    *   Niveau 1 : Coup aléatoire.
+    *   Niveau 2 : Vérifie une victoire immédiate, sinon bloque une menace immédiate, sinon aléatoire.
+    *   Niveau 3 : Utilise l'algorithme Minimax avec une profondeur de 5.
 
 ### `simulateWin` (statique)
 *   **Entrée** : `char **grille`, `int col`, `int rows`, `int cols`, `char symbol`
@@ -141,7 +144,7 @@ Ce document liste toutes les fonctions du dépôt, en décrivant leurs entrées,
 ### `afficherMenu`
 *   **Entrée** : Aucune
 *   **Sortie** : `void`
-*   **Fonction** : Fonction héritée pour afficher le menu (actuellement inutilisée/placeholder).
+*   **Fonction** : Fonction héritée pour afficher le menu (actuellement inutilisée).
 
 ### `afficherReplays`
 *   **Entrée** : Aucune
@@ -251,7 +254,12 @@ Ce document liste toutes les fonctions du dépôt, en décrivant leurs entrées,
 ### `getTerminalHeight`
 *   **Entrée** : Aucune
 *   **Sortie** : `int` (nombre de lignes)
-*   **Fonction** : Retourne la hauteur actuelle de la fenêtre du terminal.
+*   **Fonction** : Retourne la hauteur actuelle de la fenêtre du terminal. (Supports Windows `GetConsoleScreenBufferInfo` et POSIX `ioctl`).
+
+### `setupConsole`
+*   **Entrée** : Aucune
+*   **Sortie** : `void`
+*   **Fonction** : (Windows uniquement) Active les codes d'échappement ANSI (Virtual Terminal Processing) et définit la page de code UTF-8. Sans effet sur les autres plateformes.
 
 ### `visibleLength` (statique)
 *   **Entrée** : `const char *s`

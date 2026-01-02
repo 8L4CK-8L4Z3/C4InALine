@@ -48,32 +48,32 @@ void afficherGrille(char **grille, int rows, int cols, ParametresJeu *params){
     if (padding < 0) padding = 0;
     
     // Print header
-    printf("\n");
-    for(int k=0; k<padding; k++) printf(" ");
-    printf("  ");
+    ui_printf("\n");
+    for(int k=0; k<padding; k++) ui_printf(" ");
+    ui_printf("  ");
     for(int c=0;c<cols;c++){
-        printf("%d ",c);//afficher le num de chaque col
+        ui_printf("%d ",c);//afficher le num de chaque col
     }
-    printf("\n");
+    ui_printf("\n");
 
     for(int i=0;i<rows;i++){
-        for(int k=0; k<padding; k++) printf(" ");
-        printf("%d ",i);
+        for(int k=0; k<padding; k++) ui_printf(" ");
+        ui_printf("%d ",i);
         for(int j=0;j<cols;j++){
             char sym = grille[i][j];
             if (sym == '.') {
-                printf(". ");
+                ui_printf(". ");
             } else {
                 const char *colorCode = "\033[0m";
                 if (sym == params->symboleJ1) colorCode = getAnsiColor(params->colorJ1);
                 else if (sym == params->symboleJ2) colorCode = getAnsiColor(params->colorJ2);
                 
-                printf("%s%c\033[0m ", colorCode, sym);
+                ui_printf("%s%c\033[0m ", colorCode, sym);
             }
         }
-        printf("\n");
+        ui_printf("\n");
     }
-    printf("\n");
+    ui_printf("\n");
 }
 
 int colonnePleine(char **grille, int col, int rows) {

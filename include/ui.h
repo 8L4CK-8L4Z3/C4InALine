@@ -9,4 +9,9 @@ int getTerminalHeight();
 void printLogo();
 void setupConsole(); // Windows setup
 
+// Buffered rendering functions
+void ui_begin_draw();
+void ui_printf(const char *format, ...);
+void ui_end_draw();
+
 #endif // UI_H

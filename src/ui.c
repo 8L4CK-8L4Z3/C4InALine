@@ -14,6 +14,12 @@
 #include <unistd.h>
 #endif
 
+// Buffering system
+#define FRAME_BUFFER_SIZE 65536
+static char frameBuffer[FRAME_BUFFER_SIZE];
+static int framePos = 0;
+static int isBuffering = 0;
+
 void setupConsole() {
 #ifdef _WIN32
     // Enable ANSI escape codes
@@ -30,14 +36,19 @@ void setupConsole() {
 }
 
 void clearScreen() {
-#ifdef _WIN32
-    // Since we enabled ANSI, we can use the same code, 
-    // OR use system("cls") if ANSI fails. 
-    // Let's stick to ANSI as we enabled it.
-    printf("\033[H\033[J");
-#else
-    printf("\033[H\033[J");
-#endif
+    // If buffering, we don't clear screen traditionally,
+    // we assume the next frame overwrites or we rely on ui_end_draw to clear residue.
+    // However, legacy code still calls this.
+    // For buffered mode, we want to start at Home.
+    if (isBuffering) {
+        // Do nothing here, ui_begin_draw handles setup.
+        // Or we could append the clear code to buffer.
+        // But usually clearScreen calls are followed by print calls.
+        // Let's make clearScreen append "Home" + "Clear" to buffer if buffering.
+        ui_printf("\033[H\033[J");
+    } else {
+        printf("\033[H\033[J");
+    }
 }
 
 int getTerminalWidth() {
@@ -122,11 +133,17 @@ void printCentered(const char *format, ...) {
         if (padding < 0) padding = 0;
         
         if (len > 0) {
-            for (int i = 0; i < padding; i++) putchar(' ');
-            printf("%s\n", start);
+            // Reconstruct padding string
+            for (int i = 0; i < padding; i++) {
+                if(isBuffering) ui_printf(" ");
+                else putchar(' ');
+            }
+            if(isBuffering) ui_printf("%s\n", start);
+            else printf("%s\n", start);
         } else {
              // Empty line (just newline in original string)
-             printf("\n");
+             if(isBuffering) ui_printf("\n");
+             else printf("\n");
         }
 
         if (isLastLine) break;
@@ -146,9 +163,15 @@ void printCenteredPrompt(const char *format, ...) {
     int padding = (width - len) / 2;
     if (padding < 0) padding = 0;
     
-    for (int i = 0; i < padding; i++) putchar(' ');
-    printf("%s", buffer);
-    fflush(stdout);
+    for (int i = 0; i < padding; i++) {
+        if(isBuffering) ui_printf(" ");
+        else putchar(' ');
+    }
+    if(isBuffering) ui_printf("%s", buffer);
+    else {
+        printf("%s", buffer);
+        fflush(stdout);
+    }
 }
 
 void printLogo() {
@@ -161,9 +184,75 @@ void printLogo() {
         " |_|    \\__,_|_|___/___/\\__,_|_| |_|\\___\\___|      |_|  ",
         NULL
     };
-    printf("\n\033[1;36m"); // Cyan
+    if(isBuffering) ui_printf("\n\033[1;36m");
+    else printf("\n\033[1;36m"); // Cyan
+
     for (int i = 0; logo[i] != NULL; i++) {
         printCentered("%s", logo[i]);
     }
-    printf("\033[0m\n");
+    if(isBuffering) ui_printf("\033[0m\n");
+    else printf("\033[0m\n");
+}
+
+// Implement buffering
+void ui_begin_draw() {
+    isBuffering = 1;
+    framePos = 0;
+    frameBuffer[0] = '\0';
+    // Start with Home cursor
+    // We do NOT clear screen here to avoid flicker.
+    // We assume we overwrite or clear at end.
+    // Actually, to ensure overwrite works, we should start with Home.
+    // But we don't want \033[J (Clear Down) yet.
+    // However, if the new frame is smaller, artifacts remain.
+    // The "Clear Down" should happen AFTER drawing the frame if we want to be clean.
+    // But if we use clearScreen() inside the logic, it puts Home+ClearJ into the buffer.
+    // Let's rely on ui_end_draw to finalize.
+    // We add Home to start.
+    ui_printf("\033[H");
+}
+
+void ui_printf(const char *format, ...) {
+    if (!isBuffering) {
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args);
+        return;
+    }
+
+    va_list args;
+    va_start(args, format);
+    // Append to buffer
+    int remaining = FRAME_BUFFER_SIZE - framePos - 1;
+    if (remaining > 0) {
+        int written = vsnprintf(frameBuffer + framePos, remaining, format, args);
+        if (written > 0) {
+            framePos += written;
+            if (framePos >= FRAME_BUFFER_SIZE) framePos = FRAME_BUFFER_SIZE - 1;
+        }
+    }
+    va_end(args);
+}
+
+void ui_end_draw() {
+    if (!isBuffering) return;
+    isBuffering = 0;
+
+    // Append Clear Down to ensure anything below this frame is wiped
+    // This effectively clears the screen but only AFTER we have drawn the new frame in the buffer.
+    // Wait, if we put ClearJ at the end of the buffer, it clears everything AFTER the cursor.
+    // The cursor is at the end of our print.
+    // So yes, this cleans up the rest of the screen.
+    if (FRAME_BUFFER_SIZE - framePos > 5) {
+        strcat(frameBuffer, "\033[J");
+    }
+
+    // Now print everything in one go
+    // Note: Use fwrite or printf.
+    // printf might have issues with % in buffer if not careful.
+    // Use puts? puts appends newline.
+    // Use fwrite to stdout.
+    fwrite(frameBuffer, 1, strlen(frameBuffer), stdout);
+    fflush(stdout);
 }

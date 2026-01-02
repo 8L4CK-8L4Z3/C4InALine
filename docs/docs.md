@@ -7,7 +7,10 @@ This document lists all functions in the repository, describing their inputs, ou
 ### `calculerCoupOrdi`
 *   **Input**: `char **grille` (game board), `int rows`, `int cols`, `char symboleOrdi`, `char symboleJoueur`, `int difficulty`
 *   **Output**: `int` (column index)
-*   **Function**: Calculates the best move for the computer based on the difficulty level. Level 1 is random, Level 2 blocks/wins immediately, Level 3 uses Minimax.
+*   **Function**: Calculates the best move for the computer based on the difficulty level.
+    *   Level 1: Random move.
+    *   Level 2: Checks for immediate win, then immediate threat (block), otherwise random.
+    *   Level 3: Uses Minimax algorithm with depth 5.
 
 ### `simulateWin` (static)
 *   **Input**: `char **grille`, `int col`, `int rows`, `int cols`, `char symbol`
@@ -141,7 +144,7 @@ This document lists all functions in the repository, describing their inputs, ou
 ### `afficherMenu`
 *   **Input**: None
 *   **Output**: `void`
-*   **Function**: Legacy function for displaying the menu (currently unused/placeholder).
+*   **Function**: Legacy function for displaying the menu (currently unused).
 
 ### `afficherReplays`
 *   **Input**: None

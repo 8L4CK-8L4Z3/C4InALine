@@ -58,7 +58,7 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
             }
 
             // Display cursor
-            clearScreen();
+            ui_begin_draw();
 
             // Render cursor line centered
             // We need to match afficherGrille centering logic.
@@ -68,21 +68,22 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
             if (padding < 0) padding = 0;
             
             // Print cursor
-            printf("\n");
-            for(int k=0; k<padding; k++) printf(" ");
-            printf("  "); // Offset for row numbers
+            ui_printf("\n");
+            for(int k=0; k<padding; k++) ui_printf(" ");
+            ui_printf("  "); // Offset for row numbers
             for(int c=0; c<cols; c++) {
-                if (c == selectedCol) printf("v "); // Cursor
-                else printf("  ");
+                if (c == selectedCol) ui_printf("v "); // Cursor
+                else ui_printf("  ");
             }
-            printf("\n");
+            ui_printf("\n");
 
             afficherGrille(grille, rows, cols, params);
             
             char prompt[200];
             snprintf(prompt, sizeof(prompt), "Joueur %d (%c) - Fleches pour bouger, Entree pour valider, 'S' pour sauver", joueur, symbole);
             printCentered(prompt);
-            printf("\n"); // Flush
+            ui_printf("\n"); // Flush
+            ui_end_draw();
 
 #ifdef _WIN32
             Sleep(100);
