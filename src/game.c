@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/select.h>
-#include <unistd.h>
 #include <time.h>
 #include "game.h"
 #include "grid.h"
@@ -12,6 +10,14 @@
 #include "ui.h"
 #include "input.h"
 #include <string.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#define sleep(x) Sleep((x)*1000)
+#else
+#include <sys/select.h>
+#include <unistd.h>
+#endif
 
 // Helper to clear input buffer
 void viderBuffer() {
@@ -77,11 +83,11 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
             printCentered(prompt);
             printf("\n"); // Flush
 
-            // Check input with select (for timeout precision, though time(NULL) check above handles it coarsely)
-            // But readKey is blocking? No, we set VMIN=0. But wait, VMIN=0 means non-blocking.
-            // If VMIN=0, read returns 0 immediately if no input.
-            // We should use select to wait for input OR timeout.
-            
+#ifdef _WIN32
+            Sleep(100);
+            if (_kbhit()) {
+                int key = readKey();
+#else
             fd_set set;
             struct timeval timeout;
             FD_ZERO(&set);
@@ -93,6 +99,7 @@ int jouerTour(int joueur, char **grille, int rows, int cols, ParametresJeu *para
             
             if (rv > 0) {
                 int key = readKey();
+#endif
                 if (key == KEY_RIGHT) {
                     selectedCol = (selectedCol + 1) % cols;
                 } else if (key == KEY_LEFT) {
